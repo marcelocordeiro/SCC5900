@@ -1,6 +1,6 @@
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-  /* code */
+  printf("hi\nhehe\noops\n");
   return 0;
 }
