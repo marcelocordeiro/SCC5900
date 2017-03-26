@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  GaussJordan(k, a, b);;
+  GaussJordan(k, a, b);
 
   for (int i=0; i < k; i++) {
     printf("%.6lf\n", b[i]);
