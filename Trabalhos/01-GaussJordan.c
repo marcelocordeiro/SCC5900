@@ -10,10 +10,10 @@ void GaussJordan (int tamanho, double **a, double *b) {
         double aux = a[i][j];
         a[i][j] = a[cont][j];
         a[cont][j] = aux;
-        aux = b[i];
-        b[i] = b[cont];
-        b[cont] = aux;
       }
+      double aux = b[i];
+      b[i] = b[cont];
+      b[cont] = aux;
     }
     if (a[i][i] != 1) { //É necessário pivotar a linha
       double pivo = a[i][i];
