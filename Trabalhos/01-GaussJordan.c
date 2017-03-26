@@ -3,14 +3,21 @@
 
 void GaussJordan (int size, double **a, double *b) {
   for (int i=0; i < size; i++) {
-    if (a[i][i] == 0) { //É necessário trocar a linha
-      //Troca de linha
+    int cont = size;
+    while (a[i][i] == 0) { //É necessário trocar a linha
+      cont--;
+      for (int j=0; j < size; j++) {
+        double aux = a[i][j];
+        a[i][j] = a[cont][j];
+        a[cont][j] = aux;
+        aux = b[i];
+        b[i] = b[cont];
+        b[cont] = aux;
+      }
     }
     if (a[i][i] != 1) { //É necessário pivotar a linha
-      //("Bora pivotar\n");
-      int pivo = a[i][i];
+      double pivo = a[i][i];
       for (int j=0; j < size; j++) {
-        //printf("Dividindo %.0lf por %.0lf\n", a[i][j], a[i][i]);
         a[i][j] /= pivo; //Dividindo todos da linha pelo pivô
       }
       b[i] /= pivo;
@@ -19,11 +26,11 @@ void GaussJordan (int size, double **a, double *b) {
     //Próximo passo: zerar a coluna do pivô
     for (int j = 0; j < size; j++) {
       if (j != i) {
-        double multiplier = a[j][i];
+        double multiplicador = a[j][i];
         for (int k = 0; k < size; k++) {
-          a[j][k] -= (multiplier*a[i][k]);
+          a[j][k] -= (multiplicador*a[i][k]);
         }
-        b[j] -= (multiplier*b[i]);
+        b[j] -= (multiplicador*b[i]);
       }
     }
   }
@@ -48,7 +55,7 @@ int main(int argc, char *argv[]) {
   GaussJordan(size, a, b);
 
   for (int i=0; i < size; i++) {
-    printf("%.5lf\n", b[i]);
+    printf("%.6lf\n", b[i]);
   }
 
   free(a);
