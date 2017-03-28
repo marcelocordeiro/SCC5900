@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-void MontaTabela(char *tabela) {
+void MontaTabela(char tabela[]) {
   for (int i=1; i <= 26; i++) {
     tabela[i] = (char) i + 96;
   }
@@ -26,9 +26,80 @@ void MontaTabela(char *tabela) {
   tabela[91] = '}';
 }
 
+void MatrizIdentidade (double **a, int n) {
+  for (int i=0; i < n; i++) {
+    for (int j=0; j < n; j++) {
+      if (i == j) {
+        a[i][j] = 1;
+      }
+      else {
+        a[i][j] = 0;
+      }
+    }
+  }
+}
+
+double **InverteMatriz (double **a, int tamanho) {
+  double **b;
+  b = malloc (tamanho * sizeof(double));
+  for (int i=0; i < tamanho; i++) {
+    b[i] = malloc(tamanho * sizeof(double));
+  }
+  MatrizIdentidade(b, tamanho);
+  for (int i=0; i < tamanho; i++) {
+    int cont = tamanho;
+    while (a[i][i] == 0) { //É necessário trocar a linha
+      cont--;
+      for (int j=0; j < tamanho; j++) {
+        double aux = a[i][j];
+        a[i][j] = a[cont][j];
+        a[cont][j] = aux;
+        aux = b[i][j];
+        b[i][j] = b[cont][j];
+        b[cont][j] = aux;
+      }
+    }
+    if (a[i][i] != 1) { //É necessário pivotar a linha
+      double pivo = a[i][i];
+      for (int j=0; j < tamanho; j++) {
+        a[i][j] /= pivo; //Dividindo todos da linha pelo pivô
+        b[i][j] /= pivo;
+      }
+    }
+    //Linha pivotada!
+    //Próximo passo: zerar a coluna do pivô
+    for (int j = 0; j < tamanho; j++) {
+      if (j != i) {
+        double multiplicador = a[j][i];
+        for (int k = 0; k < tamanho; k++) {
+          a[j][k] -= (multiplicador*a[i][k]);
+          b[j][k] -= (multiplicador*b[i][k]);
+        }
+      }
+    }
+  }
+  return b;
+}
+
+double **MultiplicaMatrizes(double **a, double **b, int n) {
+  double **x;
+  x = malloc (n * sizeof(double));
+  for (int i=0; i < n; i++) {
+    x[i] = malloc(n * sizeof(double));
+    for (int j=0; j < n; j++) {
+      x[i][j] = 0;
+      for (int k=0; k < n; k++) {
+        x[i][j] += a[i][k]*b[k][j];
+      }
+    }
+  }
+  return x;
+}
+
 int main(int argc, char *argv[]) {
-  char tabela[92], nome_arquivo[10], texto[100];
-  int k, **a, **b;
+  char tabela[92], nome_arquivo[10], texto[100], mensagem[100];
+  int k, cont;
+  double **a, **b, **x;
   FILE *arquivo;
 
   MontaTabela(tabela);
@@ -46,21 +117,38 @@ int main(int argc, char *argv[]) {
 
   k = sqrt((strlen(texto)-1));
 
-  a = malloc (k * sizeof(int));
-  b = malloc (k * sizeof(int));
+  a = malloc (k * sizeof(double));
+  b = malloc (k * sizeof(double));
+  x = malloc (k * sizeof(double));
   for (int i=0; i < k; i++) {
     a[i] = malloc(k * sizeof(double));
     b[i] = malloc(k * sizeof(double));
+    x[i] = malloc(k * sizeof(double));
   }
 
-  int cont=0;
+  cont=0;
   for (int i=0; i < k; i++) {
     for (int j=0; j < k; j++) {
       char *aux = strchr(tabela, texto[cont]);
       a[j][i] = (int)(aux - tabela);
       cont++;
+      scanf("%lf", &b[i][j]);
     }
   }
+
+  b = InverteMatriz(b, k);
+
+  x = MultiplicaMatrizes(b, a, k);
+
+  cont = 0;
+  for (int i=0; i < k; i++) {
+    for (int j=0; j < k; j++) {
+      mensagem[cont] = tabela[(int)x[j][i]];
+      cont++;
+    }
+  }
+
+  printf("%s\n", mensagem);
 
   return 0;
 }
