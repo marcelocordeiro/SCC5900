@@ -143,8 +143,10 @@ int main(int argc, char *argv[]) {
   cont = 0;
   for (int i=0; i < k; i++) {
     for (int j=0; j < k; j++) {
-      mensagem[cont] = tabela[(int)x[j][i]];
-      cont++;
+      if ((((int)x[j][i]) <= 91) && (((int)x[j][i]) >= 0)) {
+        mensagem[cont] = tabela[(int)x[j][i]];
+        cont++;
+      }
     }
   }
 
