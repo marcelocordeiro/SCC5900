@@ -115,10 +115,8 @@ int main(int argc, char *argv[]) {
 
   strcpy(aux, "");
   strcpy(texto, "");
-  cont = 0;
   while (fgets(aux, sizeof aux, arquivo) != NULL) {
     strcat(texto, aux);
-    cont++;
   }
 
   k = sqrt((strlen(texto)));
@@ -139,9 +137,6 @@ int main(int argc, char *argv[]) {
         cont++;
       }
       char *aux = strchr(tabela, texto[cont]);
-      if (aux == NULL) {
-        aux = strchr(tabela, ' ');
-      }
       a[j][i] = (int)(aux - tabela);
       cont++;
       scanf("%lf", &b[i][j]);
