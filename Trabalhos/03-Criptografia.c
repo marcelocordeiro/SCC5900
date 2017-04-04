@@ -97,7 +97,7 @@ double **MultiplicaMatrizes(double **a, double **b, int n) {
 }
 
 int main(int argc, char *argv[]) {
-  char tabela[92], nome_arquivo[10], texto[100], mensagem[100];
+  char tabela[92], nome_arquivo[10], texto[100], aux[100], mensagem[100];
   int k, cont;
   double **a, **b, **x;
   FILE *arquivo;
@@ -113,9 +113,15 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  fgets(texto, sizeof texto, arquivo);
+  strcpy(aux, "");
+  strcpy(texto, "");
+  cont = 0;
+  while (fgets(aux, sizeof aux, arquivo) != NULL) {
+    strcat(texto, aux);
+    cont++;
+  }
 
-  k = sqrt((strlen(texto)-1));
+  k = sqrt((strlen(texto)));
 
   a = malloc (k * sizeof(double));
   b = malloc (k * sizeof(double));
@@ -126,10 +132,16 @@ int main(int argc, char *argv[]) {
     x[i] = malloc(k * sizeof(double));
   }
 
-  cont=0;
+  cont = 0;
   for (int i=0; i < k; i++) {
     for (int j=0; j < k; j++) {
+      if (texto[cont] == '\n') {
+        cont++;
+      }
       char *aux = strchr(tabela, texto[cont]);
+      if (aux == NULL) {
+        aux = strchr(tabela, ' ');
+      }
       a[j][i] = (int)(aux - tabela);
       cont++;
       scanf("%lf", &b[i][j]);
