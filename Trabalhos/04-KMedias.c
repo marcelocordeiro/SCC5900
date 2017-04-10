@@ -25,8 +25,8 @@ int encontraGrupo(double *grupos, int k, int valor) {
 }
 
 void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
-  FILE *audio, *perai;
-  unsigned char byte, help;
+  FILE *audio;//, *perai;
+  unsigned char byte;//, help;
   int indice, *contador;
   double diferenca, *medias;
 
@@ -41,9 +41,9 @@ void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
   // printf("Bora ler o arquivo?\n");
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
-    printf("%d ", byte);
+    // printf("(%d ", byte);
     indice = encontraGrupo(grupos, k, (int)byte);
-    printf("- Grupo %d --- ", (indice+1));
+    // printf("- Grupo %d - %.5f) ", (indice+1), grupos[indice]);
     medias[indice] += (int)byte;
     contador[indice]++;
   }
@@ -56,12 +56,12 @@ void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
       medias[i] /= contador[i];
       diferenca += fabs(medias[i] - grupos[i]);
       grupos[i] = medias[i];
-      printf("\nGrupo %d: %.5f\n", i+1, grupos[i]);
+      // printf("\nGrupo %d: %.5f (%.5f / %d)\n", i+1, grupos[i], medias[i]*contador[i], contador[i]);
     }
   }
   diferenca /= k;
 
-  printf("\nDiferença: %.5f\nT: %.5f\n", diferenca, t);
+  // printf("\nDiferença: %.5f (%.5f / %d)\nT: %.5f\n\n", diferenca, diferenca*k, k, t);
 
   if (diferenca > t) {
     // printf("Vou chamar de novo\n");
@@ -70,14 +70,14 @@ void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
   else {
     // printf("Terminou!\n");
     audio = fopen(nome_arquivo,"rb");
-    perai = fopen("saida1.raw","rb");
+    // perai = fopen("saida1.raw","rb");
 
     while (!feof(audio)) {
       fread(&byte, 1, 1, audio);
-      fread(&help, 1, 1, perai);
+      // fread(&help, 1, 1, perai);
       indice = encontraGrupo(grupos, k, (int)byte);
-      // fputc(floor(grupos[indice]), stdout);
-      printf("(%.0f %d)", floor(grupos[indice]), help);
+      fputc(floor(grupos[indice]), stdout);
+      // printf("(%.0f %d)", floor(grupos[indice]), help);
     }
     fclose(audio);
   }
@@ -100,9 +100,9 @@ int main(int argc, char *argv[]) {
 
   scanf("%lf", &t);
 
-  printf("Vou chamar!\n");
+  // printf("Vou chamar!\n");
   kMedias(nome_arquivo, k, grupos, t);
-  printf("\nChamei!\n");
+  // printf("\nChamei!\n");
 
   free(grupos);
   grupos = NULL;
