@@ -10,9 +10,9 @@ Data da entrega:
 #include <stdlib.h>
 #include <math.h>
 
-int encontraGrupo(double *grupos, int k, int valor) {
+int encontraGrupo(float *grupos, int k, int valor) {
   int resultado;
-  double menor;
+  float menor;
   menor = fabs(valor - grupos[0]);
   resultado = 0;
   for (int i=1; i < k; i++) {
@@ -24,13 +24,13 @@ int encontraGrupo(double *grupos, int k, int valor) {
   return resultado;
 }
 
-void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
+void kMedias(char *nome_arquivo, int k, float *grupos, float t) {
   FILE *audio;//, *perai;
   unsigned char byte;//, help;
   int indice, *contador;
-  double diferenca, *medias;
+  float diferenca, *medias;
 
-  medias = calloc(k, sizeof (double));
+  medias = calloc(k, sizeof (float));
   contador = calloc(k, sizeof (int));
 
   audio = fopen(nome_arquivo,"rb");
@@ -85,20 +85,20 @@ void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
 
 int main(int argc, char *argv[]) {
   int k;
-  double t, *grupos;
+  float t, *grupos;
   char nome_arquivo[20];
 
   scanf("%s", nome_arquivo);
   getchar();
 
   scanf("%d", &k);
-  grupos = malloc(k * sizeof (double));
+  grupos = malloc(k * sizeof (float));
 
   for (int i=0; i < k; i++) {
-    scanf("%lf", &grupos[i]);
+    scanf("%f", &grupos[i]);
   }
 
-  scanf("%lf", &t);
+  scanf("%f", &t);
 
   // printf("Vou chamar!\n");
   kMedias(nome_arquivo, k, grupos, t);
