@@ -9,11 +9,20 @@ Data da entrega:
 
 int main(int argc, char *argv[]) {
   FILE *audio;
-  unsigned char aux;
+  int byte, k, t, *grupos;
   char nome_arquivo[20];
 
   scanf("%s", nome_arquivo);
   getchar();
+
+  scanf("%d", &k);
+  grupos = malloc(k * sizeof (int));
+
+  for (int i=0; i < k; i++) {
+    scanf("%d", &grupos[i]);
+  }
+
+  scanf("%d", &t);
 
   audio = fopen(nome_arquivo,"rb");
   if (!audio) {
@@ -22,8 +31,8 @@ int main(int argc, char *argv[]) {
   }
 
   while (!feof(audio)) {
-    fread(&aux, 1, 1, audio);
-    printf("%d\n", aux);
+    fread(&byte, 1, 1, audio);
+    
   }
 
   fclose(audio);
