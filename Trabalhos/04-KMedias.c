@@ -22,9 +22,68 @@ int encontraGrupo(int *grupos, int k, int valor) {
   return resultado;
 }
 
+void kMedias(char *nome_arquivo, int k, int *grupos, double t) {
+  FILE *audio, *perai;
+  unsigned char byte, help;
+  int indice, *contador;
+  double diferenca, *medias;
+
+  medias = calloc(k, sizeof (double));
+  contador = calloc(k, sizeof (int));
+
+  audio = fopen(nome_arquivo,"rb");
+  if (!audio) {
+    printf("Arquivo não encontrado\n");
+  }
+
+  // printf("Bora ler o arquivo?\n");
+  while (!feof(audio)) {
+    fread(&byte, 1, 1, audio);
+    // printf("%d ", byte);
+    indice = encontraGrupo(grupos, k, (int)byte);
+    // printf("- Grupo %d (%d)--- ", (indice+1), grupos[indice]);
+    medias[indice] += (int)byte;
+    contador[indice]++;
+  }
+  fclose(audio);
+
+  // printf("\nNovos grupos!\n");
+  diferenca = 0;
+  for (int i=0; i < k; i++) {
+    if (contador[i] > 0) {
+      medias[i] = medias[i] / contador[i];
+      diferenca += fabs(grupos[i] - medias[i]);
+      grupos[i] = floor(medias[i]);
+      // printf("Grupo %d: %d\n", i+1, grupos[i]);
+    }
+  }
+  diferenca /= k;
+
+  printf("\nDiferença: %.5f\nT: %.5f\n", diferenca, t);
+
+  if (diferenca > t) {
+    // printf("Vou chamar de novo\n");
+    kMedias(nome_arquivo, k, grupos, t);
+  }
+  else {
+    // printf("Terminou!\n");
+    audio = fopen(nome_arquivo,"rb");
+    perai = fopen("saida1.raw","rb");
+
+    while (!feof(audio)) {
+      fread(&byte, 1, 1, audio);
+      fread(&help, 1, 1, perai);
+      indice = encontraGrupo(grupos, k, (int)byte);
+      // fputc(grupos[indice], stdout);
+      printf("(%d %d)", grupos[indice], help);
+    }
+    fclose(audio);
+  }
+}
+
 int main(int argc, char *argv[]) {
-  FILE *audio;
-  int byte, k, t, indice, diferenca, nova_media, *grupos, *medias, *contador;
+  int k, *grupos;
+  double t;
   char nome_arquivo[20];
 
   scanf("%s", nome_arquivo);
@@ -32,42 +91,19 @@ int main(int argc, char *argv[]) {
 
   scanf("%d", &k);
   grupos = malloc(k * sizeof (int));
-  medias = calloc(k, sizeof (int));
-  contador = calloc(k, sizeof (int));
 
   for (int i=0; i < k; i++) {
     scanf("%d", &grupos[i]);
   }
 
-  scanf("%d", &t);
+  scanf("%lf", &t);
 
-  audio = fopen(nome_arquivo,"rb");
-  if (!audio) {
-    printf("Arquivo não encontrado\n");
-    return 1;
-  }
+  printf("Vou chamar!\n");
+  kMedias(nome_arquivo, k, grupos, t);
+  printf("\nChamei!\n");
 
-  while (!feof(audio)) {
-    fread(&byte, 1, 1, audio);
-    indice = encontraGrupo(grupos, k, byte);
-    medias[indice] += byte;
-    contador[indice]++;
-  }
-
-  diferenca = 0;
-  for (int i=0; i < k; i++) {
-    nova_media = (int) floor(medias[i] / contador[i]);
-    diferenca += abs(nova_media - medias[i]);
-  }
-  diferenca /= k;
-
-  fclose(audio);
   free(grupos);
-  free(medias);
-  free(contador);
   grupos = NULL;
-  medias = NULL;
-  contador = NULL;
 
   return 0;
 }
