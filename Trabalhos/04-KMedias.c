@@ -6,6 +6,7 @@ Data da entrega:
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char *argv[]) {
   FILE *audio;
@@ -32,10 +33,12 @@ int main(int argc, char *argv[]) {
 
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
-    
+
   }
 
   fclose(audio);
+  free(grupos);
+  grupos = NULL;
 
   return 0;
 }
