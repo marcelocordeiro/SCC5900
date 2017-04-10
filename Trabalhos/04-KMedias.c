@@ -1,3 +1,4 @@
+
 /*
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
@@ -9,20 +10,21 @@ Data da entrega:
 #include <stdlib.h>
 #include <math.h>
 
-int encontraGrupo(int *grupos, int k, int valor) {
-  int menor, resultado;
-  menor = abs(valor - grupos[0]);
+int encontraGrupo(double *grupos, int k, int valor) {
+  int resultado;
+  double menor;
+  menor = fabs(valor - grupos[0]);
   resultado = 0;
   for (int i=1; i < k; i++) {
-    if (abs(valor - grupos[i]) < menor) {
-      menor = abs(valor - grupos[i]);
+    if (fabs(valor - grupos[i]) < menor) {
+      menor = fabs(valor - grupos[i]);
       resultado = i;
     }
   }
   return resultado;
 }
 
-void kMedias(char *nome_arquivo, int k, int *grupos, double t) {
+void kMedias(char *nome_arquivo, int k, double *grupos, double t) {
   FILE *audio, *perai;
   unsigned char byte, help;
   int indice, *contador;
@@ -39,9 +41,9 @@ void kMedias(char *nome_arquivo, int k, int *grupos, double t) {
   // printf("Bora ler o arquivo?\n");
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
-    // printf("%d ", byte);
+    printf("%d ", byte);
     indice = encontraGrupo(grupos, k, (int)byte);
-    // printf("- Grupo %d (%d)--- ", (indice+1), grupos[indice]);
+    printf("- Grupo %d --- ", (indice+1));
     medias[indice] += (int)byte;
     contador[indice]++;
   }
@@ -51,10 +53,10 @@ void kMedias(char *nome_arquivo, int k, int *grupos, double t) {
   diferenca = 0;
   for (int i=0; i < k; i++) {
     if (contador[i] > 0) {
-      medias[i] = medias[i] / contador[i];
-      diferenca += fabs(grupos[i] - medias[i]);
-      grupos[i] = floor(medias[i]);
-      // printf("Grupo %d: %d\n", i+1, grupos[i]);
+      medias[i] /= contador[i];
+      diferenca += fabs(medias[i] - grupos[i]);
+      grupos[i] = medias[i];
+      printf("\nGrupo %d: %.5f\n", i+1, grupos[i]);
     }
   }
   diferenca /= k;
@@ -74,26 +76,26 @@ void kMedias(char *nome_arquivo, int k, int *grupos, double t) {
       fread(&byte, 1, 1, audio);
       fread(&help, 1, 1, perai);
       indice = encontraGrupo(grupos, k, (int)byte);
-      // fputc(grupos[indice], stdout);
-      printf("(%d %d)", grupos[indice], help);
+      // fputc(floor(grupos[indice]), stdout);
+      printf("(%.0f %d)", floor(grupos[indice]), help);
     }
     fclose(audio);
   }
 }
 
 int main(int argc, char *argv[]) {
-  int k, *grupos;
-  double t;
+  int k;
+  double t, *grupos;
   char nome_arquivo[20];
 
   scanf("%s", nome_arquivo);
   getchar();
 
   scanf("%d", &k);
-  grupos = malloc(k * sizeof (int));
+  grupos = malloc(k * sizeof (double));
 
   for (int i=0; i < k; i++) {
-    scanf("%d", &grupos[i]);
+    scanf("%lf", &grupos[i]);
   }
 
   scanf("%lf", &t);
