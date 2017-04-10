@@ -9,7 +9,7 @@ Data da entrega:
 
 int main(int argc, char *argv[]) {
   FILE *audio;
-  int bytes[100000], aux;
+  unsigned char aux;
   char nome_arquivo[20];
 
   scanf("%s", nome_arquivo);
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
   }
 
   while (!feof(audio)) {
-    fread(aux, sizeof(aux), 1, audio);
+    fread(&aux, 1, 1, audio);
     printf("%d\n", aux);
   }
 
