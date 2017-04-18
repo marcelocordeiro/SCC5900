@@ -32,23 +32,23 @@ void MontaTabuleiro(char **tabuleiro, int n) {
           if (j > 0) {
             tabuleiro[k-1][j-1] = Incrementa(tabuleiro[k-1][j-1]);
           }
-          if (j < (strlen(tabuleiro[k])-1)) {
+          if (j < (strlen(tabuleiro[k])-2)) {
             tabuleiro[k-1][j+1] = Incrementa(tabuleiro[k-1][j+1]);
           }
         }
         if (j > 0) {
           tabuleiro[k][j-1] = Incrementa(tabuleiro[k][j-1]);
-          if (k < (strlen(tabuleiro[k])-1)) {
+          if (k < (n-1)) {
             tabuleiro[k+1][j-1] = Incrementa(tabuleiro[k+1][j-1]);
           }
         }
-        if (k < (strlen(tabuleiro[k])-1)) {
+        if (k < (n-1)) {
           tabuleiro[k+1][j] = Incrementa(tabuleiro[k+1][j]);
-          if (j < (strlen(tabuleiro[k])-1)) {
+          if (j < (strlen(tabuleiro[k])-2)) {
             tabuleiro[k+1][j+1] = Incrementa(tabuleiro[k+1][j+1]);
           }
         }
-        if (j < (strlen(tabuleiro[k])-1)) {
+        if (j < (strlen(tabuleiro[k])-2)) {
           tabuleiro[k][j+1] = Incrementa(tabuleiro[k][j+1]);
         }
       }
