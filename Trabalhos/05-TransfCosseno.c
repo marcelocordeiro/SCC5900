@@ -3,7 +3,7 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega:
+Data da entrega: 18/04/2017
 */
 
 #include <stdio.h>
@@ -44,7 +44,7 @@ double *TransfDiscretaCosseno(double *vetor, int n) {
 
   for (int k=0; k < n; k++) {
     for (int j=0; j < n; j++) {
-      vetor_transf[k] += vetor[j] * cos((M_PI/n) * (j + 0.5) * k);
+      vetor_transf[k] += vetor[j] * cos((M_PI/n) * (j + (1/2)) * k);
     }
   }
 
@@ -69,18 +69,24 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  vetor = malloc(sizeof(double));
+  vetor = malloc(0);
   n = 0;
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
+    vetor = realloc(vetor,(n+1) * sizeof(double));
     vetor[n] = (double) byte;
     n++;
-    vetor = realloc(vetor,(n+1) * sizeof(double));
   }
 
   vetor_transf = malloc(n * sizeof(double));
 
   vetor_transf = TransfDiscretaCosseno(vetor, n);
+
+  quicksort(vetor_transf, 0, n);
+
+  for (int j=n; j > (n-k); j--) {
+    printf("%.2lf\n", vetor_transf[j]);
+  }
 
   fclose(audio);
 
