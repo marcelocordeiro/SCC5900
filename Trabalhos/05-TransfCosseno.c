@@ -44,7 +44,7 @@ double *TransfDiscretaCosseno(double *vetor, int n) {
 
   for (int k=0; k < n; k++) {
     for (int j=0; j < n; j++) {
-      vetor_transf[k] += vetor[j] * cos((M_PI/n) * (j + (1/2)) * k);
+      vetor_transf[k] += vetor[j] * cos((M_PI/n) * ((j*1.0) + (1.0/2.0)) * (k*1.0));
     }
   }
 
@@ -69,14 +69,15 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  vetor = malloc(0);
+	vetor = malloc(0);
   n = 0;
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
-    vetor = realloc(vetor,(n+1) * sizeof(double));
+    vetor = (double*) realloc(vetor,(n+1) * sizeof(double));
     vetor[n] = (double) byte;
     n++;
   }
+	n--;
 
   vetor_transf = malloc(n * sizeof(double));
 
