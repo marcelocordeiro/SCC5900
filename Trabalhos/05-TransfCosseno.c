@@ -7,11 +7,13 @@ Data da entrega:
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char *argv[]) {
   FILE *audio;
   unsigned char byte;
-  int k;
+  double *vetor;
+  int k, n;
   char nome_arquivo[20];
 
   scanf("%s", nome_arquivo);
@@ -25,8 +27,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  vetor = malloc(sizeof(double));
+  n = 0;
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
+    vetor[n] = (double) byte;
+    n++;
+    vetor = realloc(vetor,(n+1) * sizeof(double));
   }
 
   fclose(audio);
