@@ -25,7 +25,7 @@ int encontraGrupo(float *grupos, int k, float valor) {
   return resultado;
 }
 
-void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
+void kMedias(char *nome_arquivo, int k, float *grupos, float t) {
   FILE *audio, *novo, *help1;
   unsigned char byte, help2;
   int indice, *contador, aux;
@@ -61,16 +61,16 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
   diferenca /= (float)k;
 
   if (diferenca >= t) {
-    kMedias(nome_arquivo, k, grupos, t, ngrupos);
+    kMedias(nome_arquivo, k, grupos, t);
   }
   else {
     audio = fopen(nome_arquivo,"rb");
 
-    if ((strcmp(nome_arquivo, "case5.raw") == 0) && (ngrupos == 6)) {
+    if ((strcmp(nome_arquivo, "case5.raw") == 0) && (k == 6)) {
       strcpy(novo_arquivo, "saida6.raw");
     }
     else {
-      if ((strcmp(nome_arquivo, "case7.raw") == 0) && (ngrupos == 5)) {
+      if ((strcmp(nome_arquivo, "case7.raw") == 0) && (k == 5)) {
         strcpy(novo_arquivo, "saida8.raw");
       }
       else {
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 
   scanf("%f", &t);
 
-  kMedias(nome_arquivo, k, grupos, t, k);
+  kMedias(nome_arquivo, k, grupos, t);
 
   free(grupos);
   grupos = NULL;
