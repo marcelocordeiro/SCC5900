@@ -11,7 +11,7 @@ Data da entrega: 18/04/2017
 #include <string.h>
 #include <math.h>
 
-int encontraGrupo(float *grupos, int k, int valor) {
+int encontraGrupo(float *grupos, int k, float valor) {
   int resultado;
   float menor;
   menor = fabs(valor - grupos[0]);
@@ -26,9 +26,9 @@ int encontraGrupo(float *grupos, int k, int valor) {
 }
 
 void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
-  FILE *audio, *novo;
-  unsigned char byte;
-  int indice, *contador;
+  FILE *audio, *novo, *help1;
+  unsigned char byte, help2;
+  int indice, *contador, aux;
   float diferenca, *medias;
   char novo_arquivo[20];
 
@@ -42,24 +42,23 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
 
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
-    indice = encontraGrupo(grupos, k, (int)byte);
-    medias[indice] += (int)byte;
-    contador[indice]++;
+    indice = encontraGrupo(grupos, k, (float)byte);
+    medias[indice] += (float)byte;
+    (contador[indice])++;
   }
   fclose(audio);
 
-  diferenca = 0;
+  diferenca = 0.0;
   for (int i=0; i < k; i++) {
     if (contador[i] > 0) {
-      medias[i] /= contador[i];
+      medias[i] /= (float)contador[i]*1.0;
       diferenca += fabs(medias[i] - grupos[i]);
       grupos[i] = medias[i];
     }
   }
-  diferenca /= k;
+  diferenca /= (float)k*1.0;
 
-
-  if (diferenca > t) {
+  if (diferenca >= t) {
     kMedias(nome_arquivo, k, grupos, t, ngrupos);
   }
   else {
@@ -69,7 +68,7 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
       strcpy(novo_arquivo, "saida6.raw");
     }
     else {
-      if ((strcmp(nome_arquivo, "case7.raw") == 0)) {
+      if ((strcmp(nome_arquivo, "case7.raw") == 0) && (ngrupos == 5)) {
         strcpy(novo_arquivo, "saida8.raw");
       }
       else {
@@ -83,11 +82,15 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
     if (!novo) {
       printf("Arquivo não criado\n");
     }
+    help1 = fopen("saida1.raw", "rb");
 
     while (!feof(audio)) {
       fread(&byte, 1, 1, audio);
-      fwrite(&byte, 1, 1, novo);
+      fread(&help2, 1, 1, help1);
       indice = encontraGrupo(grupos, k, (int)byte);
+      aux = (int)(floor(grupos[indice]));
+      fwrite(&aux, 1, 1, novo);
+      printf("(%.2f - %d)", grupos[indice], (int)help2);
     }
 
     printf("%s\n", novo_arquivo);
