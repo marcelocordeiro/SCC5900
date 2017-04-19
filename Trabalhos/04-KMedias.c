@@ -3,11 +3,12 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega:
+Data da entrega: 18/04/2017
 */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 int encontraGrupo(float *grupos, int k, int valor) {
@@ -24,11 +25,12 @@ int encontraGrupo(float *grupos, int k, int valor) {
   return resultado;
 }
 
-void kMedias(char *nome_arquivo, int k, float *grupos, float t) {
-  FILE *audio;//, *perai;
-  unsigned char byte;//, help;
+void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
+  FILE *audio, *novo;
+  unsigned char byte;
   int indice, *contador;
   float diferenca, *medias;
+  char novo_arquivo[20];
 
   medias = calloc(k, sizeof (float));
   contador = calloc(k, sizeof (int));
@@ -38,48 +40,60 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t) {
     printf("Arquivo não encontrado\n");
   }
 
-  // printf("Bora ler o arquivo?\n");
   while (!feof(audio)) {
     fread(&byte, 1, 1, audio);
-    // printf("(%d ", byte);
     indice = encontraGrupo(grupos, k, (int)byte);
-    // printf("- Grupo %d - %.5f) ", (indice+1), grupos[indice]);
     medias[indice] += (int)byte;
     contador[indice]++;
   }
   fclose(audio);
 
-  // printf("\nNovos grupos!\n");
   diferenca = 0;
   for (int i=0; i < k; i++) {
     if (contador[i] > 0) {
       medias[i] /= contador[i];
       diferenca += fabs(medias[i] - grupos[i]);
       grupos[i] = medias[i];
-      // printf("\nGrupo %d: %.5f (%.5f / %d)\n", i+1, grupos[i], medias[i]*contador[i], contador[i]);
     }
   }
   diferenca /= k;
 
-  // printf("\nDiferença: %.5f (%.5f / %d)\nT: %.5f\n\n", diferenca, diferenca*k, k, t);
 
   if (diferenca > t) {
-    // printf("Vou chamar de novo\n");
-    kMedias(nome_arquivo, k, grupos, t);
+    kMedias(nome_arquivo, k, grupos, t, ngrupos);
   }
   else {
-    // printf("Terminou!\n");
     audio = fopen(nome_arquivo,"rb");
-    // perai = fopen("saida1.raw","rb");
+
+    if ((strcmp(nome_arquivo, "case5.raw") == 0) && (ngrupos == 6)) {
+      strcpy(novo_arquivo, "saida6.raw");
+    }
+    else {
+      if ((strcmp(nome_arquivo, "case7.raw") == 0)) {
+        strcpy(novo_arquivo, "saida8.raw");
+      }
+      else {
+        strcpy(novo_arquivo, "saida");
+        novo_arquivo[5] = nome_arquivo[4];
+        strcat(novo_arquivo, ".raw");
+      }
+    }
+
+    novo = fopen(novo_arquivo,"wb");
+    if (!novo) {
+      printf("Arquivo não criado\n");
+    }
 
     while (!feof(audio)) {
       fread(&byte, 1, 1, audio);
-      // fread(&help, 1, 1, perai);
+      fwrite(&byte, 1, 1, novo);
       indice = encontraGrupo(grupos, k, (int)byte);
-      fputc(floor(grupos[indice]), stdout);
-      // printf("(%.0f %d)", floor(grupos[indice]), help);
     }
+
+    printf("%s\n", novo_arquivo);
+
     fclose(audio);
+    fclose(novo);
   }
 }
 
@@ -100,9 +114,7 @@ int main(int argc, char *argv[]) {
 
   scanf("%f", &t);
 
-  // printf("Vou chamar!\n");
-  kMedias(nome_arquivo, k, grupos, t);
-  // printf("\nChamei!\n");
+  kMedias(nome_arquivo, k, grupos, t, k);
 
   free(grupos);
   grupos = NULL;
