@@ -44,19 +44,21 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t, int ngrupos) {
     fread(&byte, 1, 1, audio);
     indice = encontraGrupo(grupos, k, (float)byte);
     medias[indice] += (float)byte;
-    (contador[indice])++;
+    contador[indice]++;
   }
+  medias[indice] -= (float)byte;
+  contador[indice]--;
   fclose(audio);
 
-  diferenca = 0.0;
+  diferenca = 0;
   for (int i=0; i < k; i++) {
     if (contador[i] > 0) {
-      medias[i] /= (float)contador[i]*1.0;
+      medias[i] /= (float)contador[i];
       diferenca += fabs(medias[i] - grupos[i]);
       grupos[i] = medias[i];
     }
   }
-  diferenca /= (float)k*1.0;
+  diferenca /= (float)k;
 
   if (diferenca >= t) {
     kMedias(nome_arquivo, k, grupos, t, ngrupos);
