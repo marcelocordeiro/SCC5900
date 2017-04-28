@@ -26,8 +26,8 @@ int encontraGrupo(float *grupos, int k, float valor) {
 }
 
 void kMedias(char *nome_arquivo, int k, float *grupos, float t) {
-  FILE *audio, *novo, *help1;
-  unsigned char byte, help2;
+  FILE *audio, *novo;
+  unsigned char byte;
   int indice, *contador, aux;
   float diferenca, *medias;
   char novo_arquivo[20];
@@ -84,15 +84,12 @@ void kMedias(char *nome_arquivo, int k, float *grupos, float t) {
     if (!novo) {
       printf("Arquivo não criado\n");
     }
-    help1 = fopen("saida1.raw", "rb");
 
     while (!feof(audio)) {
       fread(&byte, 1, 1, audio);
-      fread(&help2, 1, 1, help1);
       indice = encontraGrupo(grupos, k, (int)byte);
       aux = (int)(floor(grupos[indice]));
       fwrite(&aux, 1, 1, novo);
-      printf("(%.2f - %d)", grupos[indice], (int)help2);
     }
 
     printf("%s\n", novo_arquivo);
