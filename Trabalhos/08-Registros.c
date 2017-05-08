@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
   FILE *arquivo, *binario;
   struct estrutura *vetor;
   char nome_meta[20], nome_arquivo[20], comando[6], comando_insert[100], aux1[20], aux2[20], *token;
-  int cont, num_campos, num_elem, procura;
+  int cont, num_campos, num_elem, procura, existente;
 
   scanf("%s", nome_meta);
   getchar();
@@ -77,20 +77,57 @@ int main(int argc, char *argv[]) {
     cont++;
   }
 
-  // printf("Tenho %d campos\n", num_campos);
-  // for (int i=0; i < num_campos; i++) {
-  //   printf("Campo %d: %d\n", i, vetor[i].tipo);
-  // }
+  binario = fopen(nome_arquivo,"rb");
+  if (!binario) {
+    existente = 0;
+  }
+  else {
+    existente = 1;
+    fclose(binario);
+  }
 
-  binario = fopen(nome_arquivo,"wb+");
+  binario = fopen(nome_arquivo,"ab+");
   if (!binario) {
     printf("Unable to create file %s.\n", nome_arquivo);
     return 1;
   }
 
-  //TODO
-  //Ler o arquivo binario para saber quantos elementos já existem nele, e então atualizar num_elem
+  //Lendo arquivo binário para atualizar a quantidade de elementos atual
   num_elem = 0;
+  if (existente) {
+    cont = 1; //Aux
+    while (cont) {
+      for (int i=0; i < num_campos; i++) {
+        switch (vetor[i].tipo) {
+          case 0:
+            cont = fread(&vetor[i].uni.i, 1, sizeof(vetor[i].uni.i), binario);
+            // printf("%d\n", vetor[i].uni.i);
+            break;
+          case 1:
+            cont = fread(&vetor[i].uni.d, 1, sizeof(vetor[i].uni.d), binario);
+            // printf("%lf\n", vetor[i].uni.d);
+            break;
+          case 2:
+            cont = fread(&vetor[i].uni.c, 1, sizeof(vetor[i].uni.c), binario);
+            // printf("%c\n", vetor[i].uni.c);
+            break;
+          case 3:
+            cont = fread(vetor[i].uni.s, 1, sizeof(vetor[i].uni.s), binario);
+            // printf("%s\n", vetor[i].uni.s);
+            break;
+          case 4:
+            cont = fread(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
+            // printf("%f\n", vetor[i].uni.f);
+            break;
+        }
+        if (cont == 0) {
+          break;
+        }
+      }
+      num_elem++;
+    }
+    num_elem--;
+  }
 
   scanf("%s", comando);
   getchar();
@@ -111,15 +148,12 @@ int main(int argc, char *argv[]) {
           switch (vetor[cont].tipo) {
             case 0:
               vetor[cont].uni.i = atoi(token);
-              // printf("Int %d\n", vetor[cont].uni.i);
               break;
             case 1:
               vetor[cont].uni.d = atof(token);
-              // printf("Double %lf\n", vetor[cont].uni.d);
               break;
             case 2:
               vetor[cont].uni.c = token[1];
-              // printf("Char %c\n", vetor[cont].uni.c);
               break;
             case 3:
               for (int i = 0; i < strlen(token); i++) {
@@ -131,40 +165,37 @@ int main(int argc, char *argv[]) {
                   }
                 }
               }
-              // printf("String %s\n", vetor[cont].uni.s);
               break;
             case 4:
               vetor[cont].uni.f = (float)atof(token);
-              // printf("Float %f\n", vetor[cont].uni.f);
               break;
           }
           cont++;
           token = strtok(0, ",");
         }
         num_elem++;
+        //Gravando vetor no arquivo
+        for (int i=0; i < num_campos; i++) {
+          switch (vetor[i].tipo) {
+            case 0:
+              fwrite(&vetor[i].uni.i, 1, sizeof(vetor[i].uni.i), binario);
+              break;
+            case 1:
+              fwrite(&vetor[i].uni.d, 1, sizeof(vetor[i].uni.d), binario);
+              break;
+            case 2:
+              fwrite(&vetor[i].uni.c, 1, sizeof(vetor[i].uni.c), binario);
+              break;
+            case 3:
+              fwrite(vetor[i].uni.s, 1, sizeof(vetor[i].uni.s), binario);
+              break;
+            case 4:
+              fwrite(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
+              break;
+          }
+        }
       }
     }
-    // printf("Comando: %s\n%s\n", comando, comando_insert);
-    // for (int i=0; i < num_campos; i++) {
-    //   switch (vetor[i].tipo) {
-    //     case 0:
-    //       printf("%d\n", vetor[i].uni.i);
-    //       break;
-    //     case 1:
-    //       printf("%lf\n", vetor[i].uni.d);
-    //       break;
-    //     case 2:
-    //       printf("%c\n", vetor[i].uni.c);
-    //       break;
-    //     case 3:
-    //       printf("%s\n", vetor[i].uni.s);
-    //       getchar();
-    //       break;
-    //     case 4:
-    //       printf("%f\n", vetor[i].uni.f);
-    //       break;
-    //   }
-    // }
     scanf("%s", comando);
     getchar();
   }
