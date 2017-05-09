@@ -9,12 +9,16 @@ Data da entrega: 18/04/2017
 #include <stdlib.h>
 #include <string.h>
 
-void carregaMascaras(int ***mascaras) {
+struct mks {
+  int **mascara;
+  int largura;
+  int altura;
+} mks;
+
+void carregaMascaras(struct mks *mascaras) {
   FILE *masc;
   char nome_arquivo[20], codigo[2];
   int altura, largura, nivel_cinza, aux;
-
-  mascaras = malloc(10 * sizeof(int**));
 
   strcpy(nome_arquivo,"x.pgm");
 
@@ -31,24 +35,54 @@ void carregaMascaras(int ***mascaras) {
     fscanf(masc, "%d", &altura);
     fscanf(masc, "%d", &nivel_cinza);
 
-    mascaras[i] = malloc(altura * sizeof(int*));
+    mascaras[i].largura = largura;
+    mascaras[i].altura = altura;
+
+    mascaras[i].mascara = malloc(altura * sizeof(int*));
     for (int j=0; j < altura; j++) {
-      mascaras[i][j] = malloc(largura * sizeof(int));
+      mascaras[i].mascara[j] = malloc(largura * sizeof(int));
     }
 
     for (int j=0; j < altura; j++) {
       for (int k=0; k < largura; k++) {
         fscanf(masc, "%d", &aux);
-        mascaras[i][j][k] = aux;
+        mascaras[i].mascara[j][k] = aux;
+      }
+    }
+
+    fclose(masc);
+  }
+}
+
+int encaixa(struct mks mascaras, int **matriz, int coluna, int linha) {
+  int ruido, tolerancia;
+
+  tolerancia = 400;
+  ruido = 0;
+
+  for (int i=linha; i < (linha + mascaras.altura); i++) {
+    for (int j=coluna; j < (coluna + mascaras.largura); j++) {
+      if ((coluna == 71))
+        printf("(%d %d %d - %d %d %d)", i-linha, j-coluna, mascaras.mascara[i-linha][j-coluna], i, j, matriz[j][i]);
+      if (mascaras.mascara[i-linha][j-coluna] != matriz[j][i]) {
+        ruido++;
+      }
+      if (ruido > tolerancia) {
+        return 0;
       }
     }
   }
+
+  return 1;
 }
 
 int main(int argc, char *argv[]) {
   FILE *imagem;
   char nome_arquivo[20], codigo[2];
-  int **matriz, ***mascaras, altura, largura, nivel_cinza, aux;
+  int **matriz, altura, largura, nivel_cinza, aux;
+  struct mks *mascaras;
+
+  mascaras = malloc(10 * sizeof(struct mks));
 
   carregaMascaras(mascaras);
 
@@ -67,8 +101,6 @@ int main(int argc, char *argv[]) {
   fscanf(imagem, "%d", &altura);
   fscanf(imagem, "%d", &nivel_cinza);
 
-  // printf("Código: %s\nLargura: %d\nAltura: %d\nCinza: %d\n", codigo, largura, altura, nivel_cinza);
-
   matriz = malloc(altura * sizeof(int*));
   for (int i=0; i < altura; i++) {
     matriz[i] = malloc(largura * sizeof(int));
@@ -81,7 +113,18 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  //Encontrar mascaras na matriz
+  for (int i=0; i < largura; i++) {
+    for (int j=0; j < altura; j++) {
+      if (matriz[j][i] == 1) {
+        for (int k=0; k <= 9; k++) {
+          printf("Tentando encaixar coluna %d e linha %d com %d\n", i, j, k);
+          if (encaixa(mascaras[k], matriz, i, j)) {
+            printf("%c", k + '0');
+          }
+        }
+      }
+    }
+  }
 
   fclose(imagem);
   return 0;
