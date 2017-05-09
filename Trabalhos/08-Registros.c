@@ -60,6 +60,19 @@ void quicksort(struct est_index *vector, int left, int right) {
 	}
 }
 
+int binary_search(struct est_index *vector, int start, int end, int key) {
+	int middle;
+	if (start > end) return -1;
+	middle = (start+end)/2;
+	if (vector[middle].chave == key) {
+		return middle;
+	} else if (key > vector[middle].chave) {
+		return binary_search(vector, middle+1, end, key);
+	} else if (key < vector[middle].chave) {
+		return binary_search(vector, start, middle-1, key);
+	}
+}
+
 int calculaTamanho(struct estrutura *vetor, int num_campos) {
   int tamanho = 0;
 
@@ -88,17 +101,11 @@ int calculaTamanho(struct estrutura *vetor, int num_campos) {
 void criarIndex(FILE *arquivo, char *nome, int num_elem, int tamanho) {
   struct est_index *gravar;
   int aux;
-  char novo_nome[20];
   FILE *novo_arquivo;
 
-  strcpy(novo_nome, nome);
-  novo_nome[strlen(novo_nome)-3] = 'i';
-  novo_nome[strlen(novo_nome)-2] = 'd';
-  novo_nome[strlen(novo_nome)-1] = 'x';
-
-  novo_arquivo = fopen(novo_nome,"wb");
+  novo_arquivo = fopen(nome,"wb");
   if (!novo_arquivo) {
-    printf("Unable to create file %s.\n", novo_nome);
+    printf("Unable to create file %s.\n", nome);
     return;
   }
 
@@ -116,13 +123,16 @@ void criarIndex(FILE *arquivo, char *nome, int num_elem, int tamanho) {
     fwrite(&gravar[i].chave, 1, sizeof(gravar[i].chave), novo_arquivo);
     fwrite(&gravar[i].offset, 1, sizeof(gravar[i].offset), novo_arquivo);
   }
+
+  fclose(novo_arquivo);
 }
 
 int main(int argc, char *argv[]) {
-  FILE *arquivo, *binario;
+  FILE *arquivo, *binario, *idx;
   struct estrutura *vetor;
-  char nome_meta[20], nome_arquivo[20], comando[6], comando_insert[100], aux1[20], aux2[20], *token;
-  int cont, num_campos, num_elem, procura, existente, tamanho;
+  struct est_index *novo_index;
+  char nome_meta[20], nome_arquivo[20], nome_idx[20], comando[6], comando_insert[100], aux1[20], aux2[20], *token;
+  int cont, aux, num_campos, num_elem, procura, existente, tamanho;
 
   scanf("%s", nome_meta);
   getchar();
@@ -242,25 +252,66 @@ int main(int argc, char *argv[]) {
   tamanho = calculaTamanho(vetor, num_campos);
   // printf("Tamanho: %d\n",tamanho);
 
+  strcpy(nome_idx, nome_arquivo);
+  nome_idx[strlen(nome_idx)-3] = 'i';
+  nome_idx[strlen(nome_idx)-2] = 'd';
+  nome_idx[strlen(nome_idx)-1] = 'x';
+
   scanf("%s", comando);
   getchar();
   while (strcmp(comando,"exit")!=0) {
     if (strcmp(comando,"search")==0) {
-      //Realizar procura
-      binario = fopen(nome_arquivo,"rb");
-      if (!binario) {
-        existente = 0;
+      scanf("%d", &procura);
+      idx = fopen(nome_idx,"rb");
+      if (!idx) {
+        criarIndex(binario, nome_idx, num_elem, tamanho);
+        idx = fopen(nome_idx,"rb");
       }
-      else {
-        existente = 1;
-        fclose(binario);
+
+      novo_index = malloc(num_elem * sizeof(struct est_index));
+      for (int i=0; i < num_elem; i++) {
+        fread(&novo_index[i].chave, 1, sizeof(novo_index[i].chave), idx);
+        fread(&novo_index[i].offset, 1, sizeof(novo_index[i].offset), idx);
       }
-      criarIndex(binario, nome_arquivo, num_elem, tamanho);
+
+      cont = binary_search(novo_index, 0, num_elem, procura);
+
+      // printf("Offset: %d\n", novo_index[cont].offset);
+
+      aux = ftell(binario);
+      fseek(binario, novo_index[cont].offset, SEEK_SET);
+      for (int i=0; i < num_campos; i++) {
+        switch (vetor[i].tipo) {
+          case 0:
+            fread(&vetor[i].uni.i, 1, sizeof(vetor[i].uni.i), binario);
+            printf("%d\n", vetor[i].uni.i);
+            break;
+          case 1:
+            fread(&vetor[i].uni.d, 1, sizeof(vetor[i].uni.d), binario);
+            printf("%.2lf\n", vetor[i].uni.d);
+            break;
+          case 2:
+            fread(&vetor[i].uni.c, 1, sizeof(vetor[i].uni.c), binario);
+            printf("%c\n", vetor[i].uni.c);
+            break;
+          case 3:
+            fread(vetor[i].uni.s, 1, vetor[i].size_s * sizeof(char), binario);
+            printf("%s\n", vetor[i].uni.s);
+            break;
+          case 4:
+            fread(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
+            printf("%.2f\n", vetor[i].uni.f);
+            break;
+        }
+      }
+      fseek(binario, aux, SEEK_SET);
+
+      fclose(idx);
     }
     else {
       if (strcmp(comando,"index")==0) {
         //Criar index
-        criarIndex(binario, nome_arquivo, num_elem, tamanho);
+        criarIndex(binario, nome_idx, num_elem, tamanho);
       }
       else {
         fgets(comando_insert, sizeof(comando_insert), stdin);
