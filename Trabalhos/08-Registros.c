@@ -13,20 +13,75 @@ union tipos_dados {
   int i;
   double d;
   char c;
-  char s[100];
+  char *s;
   float f;
 };
 
 struct estrutura {
   union tipos_dados uni;
-  int tipo; //0 = int, 1 = double, 2 = char; 3 = string; 4 = float;
+  int tipo, size_s; //0 = int, 1 = double, 2 = char; 3 = string; 4 = float;
 };
+
+int calculaTamanho(struct estrutura *vetor, int num_campos) {
+  int tamanho = 0;
+
+  for (int i=0; i < num_campos; i++) {
+    switch (vetor[i].tipo) {
+      case 0:
+        tamanho += sizeof(int);
+        break;
+      case 1:
+        tamanho += sizeof(double);
+        break;
+      case 2:
+        tamanho += sizeof(char);
+        break;
+      case 3:
+        tamanho += vetor[i].size_s * sizeof(char);
+        break;
+      case 4:
+        tamanho += sizeof(float);
+        break;
+    }
+  }
+  return tamanho;
+}
+
+void criarIndex(FILE *arquivo, char *nome, int num_elem, int tamanho) {
+  struct some_name {
+    int chave, offset;
+  } *gravar;
+  int aux;
+  char novo_nome[20];
+  FILE *novo_arquivo;
+
+  strcpy(novo_nome, nome);
+  novo_nome[strlen(novo_nome)-3] = 'i';
+  novo_nome[strlen(novo_nome)-2] = 'd';
+  novo_nome[strlen(novo_nome)-1] = 'x';
+
+  novo_arquivo = fopen(novo_nome,"wb");
+  if (!novo_arquivo) {
+    printf("Unable to create file %s.\n", novo_nome);
+    return;
+  }
+
+  gravar = malloc(num_elem * sizeof(struct some_name));
+
+  for (int i=0; i < num_elem; i++) {
+    fseek(arquivo, (tamanho*i), SEEK_SET);
+    fread(&gravar[i].chave, 1, sizeof(gravar[i].chave), arquivo);
+    gravar[i].offset = tamanho*i;
+    fwrite(&gravar[i].chave, 1, sizeof(gravar[i].chave), novo_arquivo);
+    fwrite(&gravar[i].offset, 1, sizeof(gravar[i].offset), novo_arquivo);
+  }
+}
 
 int main(int argc, char *argv[]) {
   FILE *arquivo, *binario;
   struct estrutura *vetor;
   char nome_meta[20], nome_arquivo[20], comando[6], comando_insert[100], aux1[20], aux2[20], *token;
-  int cont, num_campos, num_elem, procura, existente;
+  int cont, num_campos, num_elem, procura, existente, tamanho;
 
   scanf("%s", nome_meta);
   getchar();
@@ -68,6 +123,18 @@ int main(int argc, char *argv[]) {
               }
               else {
                 vetor[num_campos-1].tipo = 3;
+                strcpy(aux1,"");
+                for (int i = 0; i < strlen(aux2); i++) {
+                  if (aux2[i] == '[') {
+                    i++;
+                    while (aux2[i] != ']') {
+                      aux1[i-5] = aux2[i];
+                      i++;
+                    }
+                  }
+                }
+                vetor[num_campos-1].size_s = atoi(aux1);
+                vetor[num_campos-1].uni.s = malloc(vetor[num_campos-1].size_s * sizeof(char));
               }
             }
           }
@@ -112,8 +179,9 @@ int main(int argc, char *argv[]) {
             // printf("%c\n", vetor[i].uni.c);
             break;
           case 3:
-            cont = fread(vetor[i].uni.s, 1, sizeof(vetor[i].uni.s), binario);
+            cont = fread(vetor[i].uni.s, 1, vetor[i].size_s * sizeof(char), binario);
             // printf("%s\n", vetor[i].uni.s);
+            strcpy(vetor[i].uni.s, "");
             break;
           case 4:
             cont = fread(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
@@ -124,21 +192,34 @@ int main(int argc, char *argv[]) {
           break;
         }
       }
+      // printf("--\n");
       num_elem++;
     }
     num_elem--;
   }
 
+  tamanho = calculaTamanho(vetor, num_campos);
+  // printf("Tamanho: %d\n",tamanho);
+
   scanf("%s", comando);
   getchar();
   while (strcmp(comando,"exit")!=0) {
     if (strcmp(comando,"search")==0) {
-      scanf("%d", &procura);
       //Realizar procura
+      binario = fopen(nome_arquivo,"rb");
+      if (!binario) {
+        existente = 0;
+      }
+      else {
+        existente = 1;
+        fclose(binario);
+      }
+      criarIndex(binario, nome_arquivo, num_elem, tamanho);
     }
     else {
       if (strcmp(comando,"index")==0) {
         //Criar index
+        criarIndex(binario, nome_arquivo, num_elem, tamanho);
       }
       else {
         fgets(comando_insert, sizeof(comando_insert), stdin);
@@ -156,6 +237,7 @@ int main(int argc, char *argv[]) {
               vetor[cont].uni.c = token[1];
               break;
             case 3:
+              strcpy(vetor[cont].uni.s,"");
               for (int i = 0; i < strlen(token); i++) {
                 if (token[i] == '"') {
                   i++;
@@ -163,6 +245,7 @@ int main(int argc, char *argv[]) {
                     vetor[cont].uni.s[i-2] = token[i];
                     i++;
                   }
+                  vetor[cont].uni.s[i-2] = '\0';
                 }
               }
               break;
@@ -187,7 +270,7 @@ int main(int argc, char *argv[]) {
               fwrite(&vetor[i].uni.c, 1, sizeof(vetor[i].uni.c), binario);
               break;
             case 3:
-              fwrite(vetor[i].uni.s, 1, sizeof(vetor[i].uni.s), binario);
+              fwrite(vetor[i].uni.s, 1, vetor[i].size_s * sizeof(char), binario);
               break;
             case 4:
               fwrite(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
