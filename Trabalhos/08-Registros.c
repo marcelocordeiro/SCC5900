@@ -2,7 +2,7 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega: 05/05/2017
+Data da entrega: 09/05/2017
 */
 
 #include <stdio.h>
@@ -19,7 +19,7 @@ union tipos_dados {
 
 struct estrutura {
   union tipos_dados uni;
-  int tipo, size_s; //0 = int, 1 = double, 2 = char; 3 = string; 4 = float;
+  int tipo, size_s; //Tipo: 0 = int, 1 = double, 2 = char; 3 = string; 4 = float;
 };
 
 struct est_index {
@@ -71,6 +71,8 @@ int binary_search(struct est_index *vector, int start, int end, int key) {
 	} else if (key < vector[middle].chave) {
 		return binary_search(vector, start, middle-1, key);
 	}
+
+  return 0;
 }
 
 int calculaTamanho(struct estrutura *vetor, int num_campos) {
@@ -100,7 +102,6 @@ int calculaTamanho(struct estrutura *vetor, int num_campos) {
 
 void criarIndex(FILE *arquivo, char *nome, int num_elem, int tamanho) {
   struct est_index *gravar;
-  int aux;
   FILE *novo_arquivo;
 
   novo_arquivo = fopen(nome,"wb");
@@ -131,7 +132,7 @@ int main(int argc, char *argv[]) {
   FILE *arquivo, *binario, *idx;
   struct estrutura *vetor;
   struct est_index *novo_index;
-  char nome_meta[20], nome_arquivo[20], nome_idx[20], comando[6], comando_insert[100], aux1[20], aux2[20], *token;
+  char nome_meta[20], nome_arquivo[20], nome_idx[20], comando[6], comando_insert[100], aux1[20], aux2[20], *token, *aux_char;
   int cont, aux, num_campos, num_elem, procura, existente, tamanho;
 
   scanf("%s", nome_meta);
@@ -147,7 +148,6 @@ int main(int argc, char *argv[]) {
 
   cont = num_campos = 0;
   while (fscanf(arquivo, "%[^:]: %s", aux1, aux2) > 0) {
-    memmove(aux2, aux2+2, strlen(aux2));
     if (cont == 0) {
       strcpy(nome_arquivo, aux2);
     }
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
                     }
                   }
                 }
-                vetor[num_campos-1].size_s = atoi(aux1);
+                vetor[num_campos-1].size_s = strtoul(aux1, &aux_char, 10);
                 vetor[num_campos-1].uni.s = malloc(vetor[num_campos-1].size_s * sizeof(char));
               }
             }
@@ -219,38 +219,31 @@ int main(int argc, char *argv[]) {
         switch (vetor[i].tipo) {
           case 0:
             cont = fread(&vetor[i].uni.i, 1, sizeof(vetor[i].uni.i), binario);
-            // printf("%d\n", vetor[i].uni.i);
             break;
           case 1:
             cont = fread(&vetor[i].uni.d, 1, sizeof(vetor[i].uni.d), binario);
-            // printf("%lf\n", vetor[i].uni.d);
             break;
           case 2:
             cont = fread(&vetor[i].uni.c, 1, sizeof(vetor[i].uni.c), binario);
-            // printf("%c\n", vetor[i].uni.c);
             break;
           case 3:
             cont = fread(vetor[i].uni.s, 1, vetor[i].size_s * sizeof(char), binario);
-            // printf("%s\n", vetor[i].uni.s);
             strcpy(vetor[i].uni.s, "");
             break;
           case 4:
             cont = fread(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
-            // printf("%f\n", vetor[i].uni.f);
             break;
         }
         if (cont == 0) {
           break;
         }
       }
-      // printf("--\n");
       num_elem++;
     }
     num_elem--;
   }
 
   tamanho = calculaTamanho(vetor, num_campos);
-  // printf("Tamanho: %d\n",tamanho);
 
   strcpy(nome_idx, nome_arquivo);
   nome_idx[strlen(nome_idx)-3] = 'i';
@@ -276,8 +269,6 @@ int main(int argc, char *argv[]) {
 
       cont = binary_search(novo_index, 0, num_elem, procura);
 
-      // printf("Offset: %d\n", novo_index[cont].offset);
-
       aux = ftell(binario);
       fseek(binario, novo_index[cont].offset, SEEK_SET);
       for (int i=0; i < num_campos; i++) {
@@ -288,7 +279,7 @@ int main(int argc, char *argv[]) {
             break;
           case 1:
             fread(&vetor[i].uni.d, 1, sizeof(vetor[i].uni.d), binario);
-            printf("%.2lf\n", vetor[i].uni.d);
+            printf("%g\n", vetor[i].uni.d);
             break;
           case 2:
             fread(&vetor[i].uni.c, 1, sizeof(vetor[i].uni.c), binario);
@@ -300,7 +291,7 @@ int main(int argc, char *argv[]) {
             break;
           case 4:
             fread(&vetor[i].uni.f, 1, sizeof(vetor[i].uni.f), binario);
-            printf("%.2f\n", vetor[i].uni.f);
+            printf("%g\n", vetor[i].uni.f);
             break;
         }
       }
@@ -317,13 +308,13 @@ int main(int argc, char *argv[]) {
         fgets(comando_insert, sizeof(comando_insert), stdin);
         cont = 0;
         token = strtok(comando_insert, ",");
-        while (token != 0) {
+        while (token != NULL) {
           switch (vetor[cont].tipo) {
             case 0:
-              vetor[cont].uni.i = atoi(token);
+              vetor[cont].uni.i = strtoul(token, &aux_char, 10);
               break;
             case 1:
-              vetor[cont].uni.d = atof(token);
+              vetor[cont].uni.d = strtod(token, &aux_char);
               break;
             case 2:
               vetor[cont].uni.c = token[1];
@@ -342,11 +333,11 @@ int main(int argc, char *argv[]) {
               }
               break;
             case 4:
-              vetor[cont].uni.f = (float)atof(token);
+              vetor[cont].uni.f = strtof(token, &aux_char);
               break;
           }
           cont++;
-          token = strtok(0, ",");
+          token = strtok(NULL, ",");
         }
         num_elem++;
         //Gravando vetor no arquivo
