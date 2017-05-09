@@ -2,7 +2,10 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega: 18/04/2017
+Data da entrega: 09/05/2017
+
+O algoritmo procura por bits 1 na imagem, e então inicia uma comparação com as máscaras de cada número, considerando um fator de tolerância para eliminar os ruídos.
+Para que o método funcione, todas as máscaras precisam ter o número justificado ao lado esquerdo da máscara, por isso a máscara do número 1 é inicializada manualmente, pois no arquivo ele se encontra centralizado.
 */
 
 #include <stdio.h>
@@ -35,6 +38,10 @@ void carregaMascaras(struct mks *mascaras) {
     fscanf(masc, "%d", &altura);
     fscanf(masc, "%d", &nivel_cinza);
 
+    if (i == 1) {
+      largura = 20;
+    }
+
     mascaras[i].largura = largura;
     mascaras[i].altura = altura;
 
@@ -45,8 +52,21 @@ void carregaMascaras(struct mks *mascaras) {
 
     for (int j=0; j < altura; j++) {
       for (int k=0; k < largura; k++) {
-        fscanf(masc, "%d", &aux);
-        mascaras[i].mascara[j][k] = aux;
+        if (i != 1)
+        {
+          fscanf(masc, "%d", &aux);
+          mascaras[i].mascara[j][k] = aux;
+        }
+        else
+        {
+          if (k <= 9) {
+            mascaras[i].mascara[j][k] = 1;
+          }
+          else
+          {
+            mascaras[i].mascara[j][k] = 0;
+          }
+        }
       }
     }
 
@@ -54,17 +74,15 @@ void carregaMascaras(struct mks *mascaras) {
   }
 }
 
-int encaixa(struct mks mascaras, int **matriz, int coluna, int linha) {
-  int ruido, tolerancia;
+int encaixa(struct mks mascaras, int **matriz, int largura, int altura, int coluna, int linha) {
+  int ruido, tolerancia, i, j;
 
-  tolerancia = 400;
+  tolerancia = 100;
   ruido = 0;
 
-  for (int i=linha; i < (linha + mascaras.altura); i++) {
-    for (int j=coluna; j < (coluna + mascaras.largura); j++) {
-      if ((coluna == 71))
-        printf("(%d %d %d - %d %d %d)", i-linha, j-coluna, mascaras.mascara[i-linha][j-coluna], i, j, matriz[j][i]);
-      if (mascaras.mascara[i-linha][j-coluna] != matriz[j][i]) {
+  for (i=linha; ((i < (linha + mascaras.altura)) && (i < altura)); i++) {
+    for (j=coluna; ((j < (coluna + mascaras.largura)) && (j < largura)); j++) {
+      if (mascaras.mascara[i-linha][j-coluna] != matriz[i][j]) {
         ruido++;
       }
       if (ruido > tolerancia) {
@@ -72,8 +90,12 @@ int encaixa(struct mks mascaras, int **matriz, int coluna, int linha) {
       }
     }
   }
+  if ((i == linha + mascaras.altura) && (j == coluna + mascaras.largura))
+  {
+    return 1;
+  }
 
-  return 1;
+  return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -117,9 +139,11 @@ int main(int argc, char *argv[]) {
     for (int j=0; j < altura; j++) {
       if (matriz[j][i] == 1) {
         for (int k=0; k <= 9; k++) {
-          printf("Tentando encaixar coluna %d e linha %d com %d\n", i, j, k);
-          if (encaixa(mascaras[k], matriz, i, j)) {
+          if (encaixa(mascaras[k], matriz, largura, altura, i, j)) {
             printf("%c", k + '0');
+            i += mascaras[k].largura;
+            j = altura;
+            break;
           }
         }
       }
