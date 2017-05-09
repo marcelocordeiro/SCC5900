@@ -22,6 +22,44 @@ struct estrutura {
   int tipo, size_s; //0 = int, 1 = double, 2 = char; 3 = string; 4 = float;
 };
 
+struct est_index {
+  int chave, offset;
+};
+
+int partition(struct est_index *vector, int left, int right) {
+	int i, j;
+  double aux;
+	i = left;
+	for (j = i+1; j <= right; j++) {
+		if (vector[j].chave < vector[left].chave) {
+			++i;
+      aux = vector[i].chave;
+      vector[i].chave = vector[j].chave;
+      vector[j].chave = aux;
+      aux = vector[i].offset;
+      vector[i].offset = vector[j].offset;
+      vector[j].offset = aux;
+		}
+	}
+  aux = vector[i].chave;
+  vector[i].chave = vector[left].chave;
+  vector[left].chave = aux;
+  aux = vector[i].offset;
+  vector[i].offset = vector[left].offset;
+  vector[left].offset = aux;
+	return i;
+}
+
+
+void quicksort(struct est_index *vector, int left, int right) {
+	int r;
+	if (left < right) {
+		r = partition(vector, left, right);
+		quicksort(vector, left, r-1);
+		quicksort(vector, r+1, right);
+	}
+}
+
 int calculaTamanho(struct estrutura *vetor, int num_campos) {
   int tamanho = 0;
 
@@ -48,9 +86,7 @@ int calculaTamanho(struct estrutura *vetor, int num_campos) {
 }
 
 void criarIndex(FILE *arquivo, char *nome, int num_elem, int tamanho) {
-  struct some_name {
-    int chave, offset;
-  } *gravar;
+  struct est_index *gravar;
   int aux;
   char novo_nome[20];
   FILE *novo_arquivo;
@@ -66,12 +102,17 @@ void criarIndex(FILE *arquivo, char *nome, int num_elem, int tamanho) {
     return;
   }
 
-  gravar = malloc(num_elem * sizeof(struct some_name));
+  gravar = malloc(num_elem * sizeof(struct est_index));
 
   for (int i=0; i < num_elem; i++) {
     fseek(arquivo, (tamanho*i), SEEK_SET);
     fread(&gravar[i].chave, 1, sizeof(gravar[i].chave), arquivo);
     gravar[i].offset = tamanho*i;
+  }
+
+  quicksort(gravar, 0, num_elem);
+
+  for (int i=0; i < num_elem; i++) {
     fwrite(&gravar[i].chave, 1, sizeof(gravar[i].chave), novo_arquivo);
     fwrite(&gravar[i].offset, 1, sizeof(gravar[i].offset), novo_arquivo);
   }
