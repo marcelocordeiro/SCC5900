@@ -7,7 +7,6 @@ Data da entrega: 13/05/2017
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 int main(int argc, char *argv[]) {
   char codigo[2], aux[3];
@@ -103,6 +102,11 @@ int main(int argc, char *argv[]) {
 
       break;
   }
+
+  for (int i=0; i < altura; i++) {
+    free(matriz[i]);
+  }
+  free (matriz);
 
   return 0;
 }
