@@ -8,6 +8,7 @@ Data da entrega: 13/05/2017
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 union tipos_dados {
   int i;
@@ -107,7 +108,7 @@ void readData(FILE *file_data, struct estrutura *schema, int num_campos) {
   fseek(file_data, 0, SEEK_SET);
 
   do {
-    for (int i=0; i < num_campos; i++) {
+    for (int i=0; (i < num_campos) && (cont == 1); i++) {
       switch (schema[i].tipo) {
         case 0:
           if (fread(&schema[i].uni.i, 1, sizeof(schema[i].uni.i), file_data) <= 0) {
@@ -135,11 +136,57 @@ void readData(FILE *file_data, struct estrutura *schema, int num_campos) {
   } while(cont);
 }
 
+void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos) {
+  int cont = 1, aux_i;
+  double dist, aux_d;
+  char lala[50];
+
+  fseek(file_data, 0, SEEK_SET);
+
+  do {
+    dist = 0;
+    for (int i=0; i < (num_campos - 1); i++) {
+      switch (schema[i].tipo) {
+        case 0:
+          if (fread(&aux_i, 1, sizeof(aux_i), file_data) <= 0) {
+            cont = 0;
+          }
+          else {
+            if (i != 0) {
+              printf("%s = %d - %d\n", schema[i].nome, aux_i, schema[i].uni.i);
+              dist += pow(aux_i - schema[i].uni.i, 2);
+            }
+          }
+          break;
+        case 1:
+          if (fread(&aux_d, 1, sizeof(aux_d), file_data) <= 0) {
+            cont = 0;
+          }
+          else {
+            printf("%s = %.2lf - %.2lf\n", schema[i].nome, aux_d, schema[i].uni.d);
+            dist += pow(aux_d - schema[i].uni.d, 2);
+          }
+          break;
+        case 2:
+          if (fread(lala, 1, sizeof(schema[i].uni.s), file_data) <= 0) {
+            cont = 0;
+          }
+          break;
+      }
+    }
+    if (cont) {
+      schema[num_campos - 1].uni.d = sqrt(dist);
+      printf("Disancia: %.2lf --- %.2lf\n", dist, schema[num_campos - 1].uni.d);
+      fwrite(&schema[num_campos - 1].uni.d, 1, sizeof(schema[num_campos - 1].uni.d), file_data);
+    }
+  } while(cont);
+}
+
 int main(int argc, char *argv[]) {
   FILE *file_data;
   struct estrutura *schema;
   char nome_schema[30], nome_data[30], comando[11]; //aux1[20], aux2[20]
-  int num_campos, aux, tam_total = 0;
+  int num_campos, aux, tam_total = 0, qtd;
 
   scanf("%s", nome_schema);
   getchar();
@@ -212,7 +259,23 @@ int main(int argc, char *argv[]) {
       }
       else {
         if (strcmp(comando, "dump_nn") == 0) {
-          printf("Escolheu dump_nn\n");
+          scanf("%d", &qtd);
+          for (int i=0; i < (num_campos - 2); i++) {
+            switch (schema[i].tipo) {
+              case 0:
+                scanf("%d", &schema[i].uni.i);
+                break;
+              case 1:
+                scanf("%lf", &schema[i].uni.d);
+                break;
+              case 2:
+                getchar();
+                scanf("%[^\n]s", schema[i].uni.s);
+                break;
+            }
+          }
+          printf("Bora calcular distancia! \n");
+          calculaDist(file_data, schema, num_campos);
         }
         else {
           if (strcmp(comando, "knn") == 0) {
