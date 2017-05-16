@@ -2,7 +2,7 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega: 13/05/2017
+Data da entrega: 16/05/2017
 */
 
 #include <stdio.h>
@@ -250,23 +250,23 @@ void sobeHeap(int n, struct heap **max_heap) {
 
 void addHeap(struct heap **max_heap, int num_elem, struct heap *insere) {
   max_heap[num_elem]->id = insere->id;
-  printf("ID %d\n", max_heap[num_elem]->id);
+  // printf("ID %d\n", max_heap[num_elem]->id);
   max_heap[num_elem]->dist = insere->dist;
-  printf("Dist %.2lf\n", max_heap[num_elem]->dist);
+  // printf("Dist %.2lf\n", max_heap[num_elem]->dist);
   max_heap[num_elem]->tipo = insere->tipo;
-  printf("Tipo %d\n", max_heap[num_elem]->tipo);
+  // printf("Tipo %d\n", max_heap[num_elem]->tipo);
   switch (insere->tipo) {
     case 0:
       max_heap[num_elem]->class.i = insere->class.i;
-      printf("Class %d\n", max_heap[num_elem]->class.i);
+      // printf("Class %d\n", max_heap[num_elem]->class.i);
       break;
     case 1:
       max_heap[num_elem]->class.d = insere->class.d;
-      printf("Class %.2lf\n", max_heap[num_elem]->class.d);
+      // printf("Class %.2lf\n", max_heap[num_elem]->class.d);
       break;
     case 2:
       max_heap[num_elem]->class.s = insere->class.s;
-      printf("Class %s\n", max_heap[num_elem]->class.s);
+      // printf("Class %s\n", max_heap[num_elem]->class.s);
       break;
   }
 
@@ -277,7 +277,7 @@ void buildHeap(FILE *file_data, struct estrutura *schema, int num_campos, struct
   struct heap insere;
   int cont = 1, num_elem = 0;
 
-  printf("Construindo a heap\n");
+  // printf("Construindo a heap\n");
 
   fseek(file_data, 0, SEEK_SET);
 
@@ -291,13 +291,13 @@ void buildHeap(FILE *file_data, struct estrutura *schema, int num_campos, struct
           else {
             if (i == 0) {
               insere.id = schema[i].uni.i;
-              printf("i: %d - %s = %d\n", i, schema[i].nome, insere.id);
+              // printf("i: %d - %s = %d\n", i, schema[i].nome, insere.id);
             }
             else {
               if (i == (num_campos - 2)) {
                 insere.class.i = schema[i].uni.i;
                 insere.tipo = 0;
-                printf("i: %d - %s = %d\n", i, schema[i].nome, insere.class.i);
+                // printf("i: %d - %s = %d\n", i, schema[i].nome, insere.class.i);
               }
             }
           }
@@ -310,11 +310,11 @@ void buildHeap(FILE *file_data, struct estrutura *schema, int num_campos, struct
             if (i == (num_campos - 2)) {
               insere.class.d = schema[i].uni.d;
               insere.tipo = 1;
-              printf("i: %d - %s = %.2lf\n", i, schema[i].nome, insere.class.d);
+              // printf("i: %d - %s = %.2lf\n", i, schema[i].nome, insere.class.d);
             }
             if (i == (num_campos - 1)) {
               insere.dist = schema[i].uni.d;
-              printf("i: %d - %s = %.2lf\n", i, schema[i].nome, insere.dist);
+              // printf("i: %d - %s = %.2lf\n", i, schema[i].nome, insere.dist);
             }
           }
           break;
@@ -327,17 +327,17 @@ void buildHeap(FILE *file_data, struct estrutura *schema, int num_campos, struct
               insere.tipo = 2;
               insere.class.s = malloc(sizeof(schema[i].uni.s));
               strcpy(insere.class.s, schema[i].uni.s);
-              printf("i: %d - %s = %s\n", i, schema[i].nome, insere.class.s);
+              // printf("i: %d - %s = %s\n", i, schema[i].nome, insere.class.s);
             }
           }
           break;
       }
     }
     if (cont) {
-      printf("Vou colocar na heap - N %d\n", num_elem);
+      // printf("Vou colocar na heap - N %d\n", num_elem);
       addHeap(max_heap, num_elem, &insere);
       num_elem++;
-      printf("Coloquei na heap - N %d\n", num_elem);
+      // printf("Coloquei na heap - N %d\n", num_elem);
     }
   } while(cont);
 }
@@ -361,9 +361,9 @@ int main(int argc, char *argv[]) {
   // printf("Nome do arquivo de dados: %s\n", nome_data);
   // printf("Num campos: %d\n", num_campos);
 
-  for (int i=0; i < num_campos; i++) {
-    printf("%s: %d\n", schema[i].nome, schema[i].tipo);
-  }
+  // for (int i=0; i < num_campos; i++) {
+  //   printf("%s: %d\n", schema[i].nome, schema[i].tipo);
+  // }
 
   file_data = fopen(nome_data,"wb+");
   if (!file_data) {
@@ -390,19 +390,19 @@ int main(int argc, char *argv[]) {
     }
     schema[num_campos - 1].uni.d = 0;
 
-    printf("Vou gravar:\n");
+    // printf("Vou gravar:\n");
     for (int i=0; i < num_campos; i++) {
       switch (schema[i].tipo) {
         case 0:
-          printf("%d\n", schema[i].uni.i);
+          // printf("%d\n", schema[i].uni.i);
           fwrite(&schema[i].uni.i, 1, sizeof(schema[i].uni.i), file_data);
           break;
         case 1:
-          printf("%lf\n", schema[i].uni.d);
+          // printf("%lf\n", schema[i].uni.d);
           fwrite(&schema[i].uni.d, 1, sizeof(schema[i].uni.d), file_data);
           break;
         case 2:
-          printf("%s\n", schema[i].uni.s);
+          // printf("%s\n", schema[i].uni.s);
           fwrite(schema[i].uni.s, 1, sizeof(schema[i].uni.s), file_data);
           break;
       }
@@ -437,14 +437,14 @@ int main(int argc, char *argv[]) {
                 break;
             }
           }
-          printf("Bora calcular distancia! \n");
+          // printf("Bora calcular distancia! \n");
           calculaDist(file_data, schema, num_campos);
           buildHeap(file_data, schema, num_campos, &max_heap);
-          printf("Uhul, tá na heap!\n");
+          // printf("Uhul, tá na heap!\n");
         }
         else {
           if (strcmp(comando, "knn") == 0) {
-            printf("Escolheu knn\n");
+            // printf("Escolheu knn\n");
           }
         }
       }
