@@ -10,26 +10,55 @@ Data da entrega: 16/05/2017
 #include <string.h>
 #include <math.h>
 
+union classe{
+  int i;
+  double d;
+  char *s;
+} *classes;
+
 struct estrutura {
-  union {
-    int i;
-    double d;
-    char *s;
-  } uni;
+  union classe uni;
   int tipo, size_s;
   char nome[20];
   //Tipo: 0 = int; 1 = double; 2 = string;
 };
 
-struct heap {
-  int id, tipo;
-  double dist;
-  union {
-    int i;
-    double d;
-    char *s;
-  } class;
-};
+void swap(double *vector, int *vector2, union classe *vector3, int *vector4, int i, int j) {
+  double aux1 = vector[i];
+  int aux2 = vector2[i];
+  union classe aux3 = vector3[i];
+  int aux4 = vector4[i];
+  vector[i] = vector[j];
+  vector2[i] = vector2[j];
+  vector3[i] = vector3[j];
+  vector4[i] = vector4[j];
+  vector[j] = aux1;
+  vector2[j] = aux2;
+  vector3[j] = aux3;
+  vector4[j] = aux4;
+}
+
+int partition(double *vector, int *vector2, union classe *classes, int *tipos, int left, int right) {
+	int i, j;
+	i = left;
+	for (j = i+1; j <= right; j++) {
+		if (vector[j] < vector[left]) {
+			++i;
+			swap(vector, vector2, classes, tipos, i, j);
+		}
+	}
+	swap(vector, vector2, classes, tipos, i, left);
+	return i;
+}
+
+void quicksort(double *vector, int *vector2, union classe *classes, int *tipos, int left, int right) {
+	int r;
+	if (left < right) {
+		r = partition(vector, vector2, classes, tipos, left, right);
+		quicksort(vector, vector2, classes, tipos, left, r-1);
+		quicksort(vector, vector2, classes, tipos, r+1, right);
+	}
+}
 
 void readSchema(char *nome_schema, struct estrutura **schema, int *num_campos, char *nome_data, int *tam_total, int print) {
   FILE *file_schema;
@@ -85,7 +114,6 @@ void readSchema(char *nome_schema, struct estrutura **schema, int *num_campos, c
             }
           }
           new_schema[(*num_campos)-1].size_s = atoi(aux3);
-          // printf("Tamanho do char: %d\n", new_schema[(*num_campos)-1].size_s);
           new_schema[(*num_campos)-1].uni.s = malloc(new_schema[(*num_campos)-1].size_s * sizeof(char));
           tamanho = new_schema[(*num_campos)-1].size_s * (int) sizeof(char);
         }
@@ -133,6 +161,7 @@ void readData(FILE *file_data, struct estrutura *schema, int num_campos) {
           printf("%s = %.2lf\n", schema[i].nome, schema[i].uni.d);
           break;
         case 2:
+          strcpy(schema[i].uni.s, "");
           if (fread(schema[i].uni.s, 1, sizeof(schema[i].uni.s), file_data) <= 0) {
             cont = 0;
             return;
@@ -144,25 +173,38 @@ void readData(FILE *file_data, struct estrutura *schema, int num_campos) {
   } while(cont);
 }
 
-void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos) {
-  int cont = 1, aux_i;
+void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos, int *ids, double *dists, union classe **classes, int *tipos, int num_elem) {
+  int cont = 1, aux_i, counter = 0;
   double dist, aux_d;
   char *aux_s;
+  union classe *new_classes;
+
+  new_classes = malloc(num_elem * sizeof(union classe));
 
   fseek(file_data, 0, SEEK_SET);
 
   do {
     dist = 0;
-    for (int i=0; i < (num_campos - 1); i++) {
+    for (int i=0; i < (num_campos -1); i++) {
       switch (schema[i].tipo) {
         case 0:
           if (fread(&aux_i, 1, sizeof(aux_i), file_data) <= 0) {
             cont = 0;
           }
           else {
-            if (i != 0) {
-              // printf("%s = %d - %d\n", schema[i].nome, aux_i, schema[i].uni.i);
+            if ((i != 0) && (i != (num_campos -2))){
               dist += pow(aux_i - schema[i].uni.i, 2);
+            }
+            else {
+              if (i == 0) {
+                ids[counter] = aux_i;
+                // printf("%d ID %d\n", counter, ids[counter]);
+              }
+              else {
+                new_classes[counter].i = aux_i;
+                // printf("%d Classe %d\n", counter, new_classes[counter].i);
+                tipos[counter] = 0;
+              }
             }
           }
           break;
@@ -171,199 +213,102 @@ void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos) {
             cont = 0;
           }
           else {
-            // printf("%s = %.2lf - %.2lf\n", schema[i].nome, aux_d, schema[i].uni.d);
-            dist += pow(aux_d - schema[i].uni.d, 2);
+            if (i != (num_campos - 2)) {
+              dist += pow(aux_d - schema[i].uni.d, 2);
+            }
+            else {
+              new_classes[counter].d = aux_d;
+              // printf("%d Classe %.2lf\n", counter, new_classes[counter].d);
+              tipos[counter] = 1;
+            }
           }
           break;
         case 2:
-          aux_s = malloc(sizeof(schema[i].uni.s));
+          aux_s = malloc(schema[i].size_s * sizeof(char));
           if (fread(aux_s, 1, sizeof(schema[i].uni.s), file_data) <= 0) {
             cont = 0;
           }
-          free(aux_s);
+          else {
+            new_classes[counter].s = malloc(schema[i].size_s * sizeof(char));
+            new_classes[counter].s = aux_s;
+            // printf("%d Classe %s\n", counter, new_classes[counter].s);
+            tipos[counter] = 2;
+          }
           break;
       }
     }
     if (cont) {
       schema[num_campos - 1].uni.d = sqrt(dist);
-      // printf("Disancia: %.2lf --- %.2lf\n", dist, schema[num_campos - 1].uni.d);
+      dists[counter] = schema[num_campos - 1].uni.d;
+      counter++;
+      // printf("Distancia: %.2lf\n", schema[num_campos - 1].uni.d);
       fwrite(&schema[num_campos - 1].uni.d, 1, sizeof(schema[num_campos - 1].uni.d), file_data);
     }
   } while(cont);
+
+  *classes = new_classes;
+
 }
 
-void sobeHeap(int n, struct heap **max_heap) {
-  struct heap aux_heap;
-  int aux;
-
-  aux = floor((n -1) / 2);
-
-  if ((aux >= 0) && (max_heap[n]->dist > max_heap[aux]->dist)) {
-    aux_heap.id = max_heap[n]->id;
-    aux_heap.dist = max_heap[n]->dist;
-    aux_heap.tipo = max_heap[n]->tipo;
-    switch (max_heap[n]->tipo) {
-      case 0:
-        aux_heap.class.i = max_heap[n]->class.i;
-        break;
-      case 1:
-        aux_heap.class.d = max_heap[n]->class.d;
-        break;
-      case 2:
-        aux_heap.class.s = max_heap[n]->class.s;
-        break;
-    }
-
-    max_heap[n]->id = max_heap[aux]->id;
-    max_heap[n]->dist = max_heap[aux]->dist;
-    max_heap[n]->tipo = max_heap[aux]->tipo;
-    switch (max_heap[aux]->tipo) {
-      case 0:
-        max_heap[n]->class.i = max_heap[aux]->class.i;
-        break;
-      case 1:
-        max_heap[n]->class.d = max_heap[aux]->class.d;
-        break;
-      case 2:
-        max_heap[n]->class.s = max_heap[aux]->class.s;
-        break;
-    }
-
-    max_heap[aux]->id = aux_heap.id;
-    max_heap[aux]->dist = aux_heap.dist;
-    max_heap[aux]->tipo = aux_heap.tipo;
-    switch (aux_heap.tipo) {
-      case 0:
-        max_heap[aux]->class.i = aux_heap.class.i;
-        break;
-      case 1:
-        max_heap[aux]->class.d = aux_heap.class.d;
-        break;
-      case 2:
-        max_heap[aux]->class.s = aux_heap.class.s;
-        break;
-    }
-
-    sobeHeap(aux, max_heap);
-  }
-}
-
-void addHeap(struct heap **max_heap, int num_elem, struct heap *insere) {
-  max_heap[num_elem]->id = insere->id;
-  // printf("ID %d\n", max_heap[num_elem]->id);
-  max_heap[num_elem]->dist = insere->dist;
-  // printf("Dist %.2lf\n", max_heap[num_elem]->dist);
-  max_heap[num_elem]->tipo = insere->tipo;
-  // printf("Tipo %d\n", max_heap[num_elem]->tipo);
-  switch (insere->tipo) {
-    case 0:
-      max_heap[num_elem]->class.i = insere->class.i;
-      // printf("Class %d\n", max_heap[num_elem]->class.i);
-      break;
-    case 1:
-      max_heap[num_elem]->class.d = insere->class.d;
-      // printf("Class %.2lf\n", max_heap[num_elem]->class.d);
-      break;
-    case 2:
-      max_heap[num_elem]->class.s = insere->class.s;
-      // printf("Class %s\n", max_heap[num_elem]->class.s);
-      break;
-  }
-
-  sobeHeap(num_elem, max_heap);
-}
-
-void buildHeap(FILE *file_data, struct estrutura *schema, int num_campos, struct heap **max_heap) {
-  struct heap insere;
-  int cont = 1, num_elem = 0;
-
-  // printf("Construindo a heap\n");
-
-  fseek(file_data, 0, SEEK_SET);
-
+void printDataIDS(FILE *file_data, struct estrutura *schema, int num_campos, int *ids, int qtd) {
+  int cont, print, cont2 = 0;
   do {
-    for (int i=0; (i < num_campos) && (cont == 1); i++) {
-      switch (schema[i].tipo) {
-        case 0:
-          if (fread(&schema[i].uni.i, 1, sizeof(schema[i].uni.i), file_data) <= 0) {
-            cont = 0;
-          }
-          else {
-            if (i == 0) {
-              insere.id = schema[i].uni.i;
-              // printf("i: %d - %s = %d\n", i, schema[i].nome, insere.id);
+    cont = 1;
+    print = 0;
+    fseek(file_data, 0, SEEK_SET);
+    do {
+      print = 0;
+      for (int i=0; (i < num_campos) && (cont == 1); i++) {
+        switch (schema[i].tipo) {
+          case 0:
+            if (fread(&schema[i].uni.i, 1, sizeof(schema[i].uni.i), file_data) <= 0) {
+              cont = 0;
+              break;
             }
-            else {
-              if (i == (num_campos - 2)) {
-                insere.class.i = schema[i].uni.i;
-                insere.tipo = 0;
-                // printf("i: %d - %s = %d\n", i, schema[i].nome, insere.class.i);
-              }
+            if ((i == 0) && (schema[i].uni.i == ids[cont2])) {
+              print = 1;
+              cont2++;
             }
-          }
-          break;
-        case 1:
-          if (fread(&schema[i].uni.d, 1, sizeof(schema[i].uni.d), file_data) <= 0) {
-            cont = 0;
-          }
-          else {
-            if (i == (num_campos - 2)) {
-              insere.class.d = schema[i].uni.d;
-              insere.tipo = 1;
-              // printf("i: %d - %s = %.2lf\n", i, schema[i].nome, insere.class.d);
+            if (print) {
+              printf("%s = %d\n", schema[i].nome, schema[i].uni.i);
             }
-            if (i == (num_campos - 1)) {
-              insere.dist = schema[i].uni.d;
-              // printf("i: %d - %s = %.2lf\n", i, schema[i].nome, insere.dist);
+            break;
+          case 1:
+            if (fread(&schema[i].uni.d, 1, sizeof(schema[i].uni.d), file_data) <= 0) {
+              cont = 0;
+              break;
             }
-          }
-          break;
-        case 2:
-          if (fread(schema[i].uni.s, 1, sizeof(schema[i].uni.s), file_data) <= 0) {
-            cont = 0;
-          }
-          else {
-            if (i == (num_campos - 2)) {
-              insere.tipo = 2;
-              insere.class.s = malloc(sizeof(schema[i].uni.s));
-              strcpy(insere.class.s, schema[i].uni.s);
-              // printf("i: %d - %s = %s\n", i, schema[i].nome, insere.class.s);
+            if (print) {
+              printf("%s = %.2lf\n", schema[i].nome, schema[i].uni.d);
             }
-          }
-          break;
+            break;
+          case 2:
+            if (fread(schema[i].uni.s, 1, sizeof(schema[i].uni.s), file_data) <= 0) {
+              cont = 0;
+              break;
+            }
+            if (print) {
+              printf("%s = %s\n", schema[i].nome, schema[i].uni.s);
+            }
+            break;
+        }
       }
-    }
-    if (cont) {
-      // printf("Vou colocar na heap - N %d\n", num_elem);
-      addHeap(max_heap, num_elem, &insere);
-      num_elem++;
-      // printf("Coloquei na heap - N %d\n", num_elem);
-    }
-  } while(cont);
+    } while ((cont) && (cont2 < qtd));
+  } while (cont2 < qtd);
 }
 
 int main(int argc, char *argv[]) {
   FILE *file_data;
   struct estrutura *schema;
-  struct heap *max_heap;
-  char nome_schema[30], nome_data[30], comando[11]; //aux1[20], aux2[20]
-  int num_campos, aux, tam_total = 0, qtd;
-
-  max_heap = malloc(50 * sizeof(struct heap*));
+  char nome_schema[30], nome_data[30], comando[11];
+  int num_campos, num_elem = 0, aux, tam_total = 0, qtd, *ids, *tipos, *class_select, i_maior;
+  double *dists;
+  union classe *classes;
 
   scanf("%s", nome_schema);
   getchar();
 
   readSchema(nome_schema, &schema, &num_campos, nome_data, &tam_total, 0);
-
-  // printf("Tamanho: %d\n", tam_total);
-
-  // printf("Nome do arquivo de dados: %s\n", nome_data);
-  // printf("Num campos: %d\n", num_campos);
-
-  // for (int i=0; i < num_campos; i++) {
-  //   printf("%s: %d\n", schema[i].nome, schema[i].tipo);
-  // }
 
   file_data = fopen(nome_data,"wb+");
   if (!file_data) {
@@ -373,6 +318,7 @@ int main(int argc, char *argv[]) {
 
   scanf("%d", &aux);
   while (aux != -1) {
+    num_elem++;
     schema[0].uni.i = aux;
     for (int i=1; i < (num_campos - 1); i++) {
       switch (schema[i].tipo) {
@@ -384,25 +330,21 @@ int main(int argc, char *argv[]) {
           break;
         case 2:
           getchar();
-          scanf("%[^\n]s", schema[i].uni.s);
+          scanf("%s", schema[i].uni.s);
           break;
       }
     }
     schema[num_campos - 1].uni.d = 0;
 
-    // printf("Vou gravar:\n");
     for (int i=0; i < num_campos; i++) {
       switch (schema[i].tipo) {
         case 0:
-          // printf("%d\n", schema[i].uni.i);
           fwrite(&schema[i].uni.i, 1, sizeof(schema[i].uni.i), file_data);
           break;
         case 1:
-          // printf("%lf\n", schema[i].uni.d);
           fwrite(&schema[i].uni.d, 1, sizeof(schema[i].uni.d), file_data);
           break;
         case 2:
-          // printf("%s\n", schema[i].uni.s);
           fwrite(schema[i].uni.s, 1, sizeof(schema[i].uni.s), file_data);
           break;
       }
@@ -437,14 +379,121 @@ int main(int argc, char *argv[]) {
                 break;
             }
           }
-          // printf("Bora calcular distancia! \n");
-          calculaDist(file_data, schema, num_campos);
-          buildHeap(file_data, schema, num_campos, &max_heap);
-          // printf("Uhul, tá na heap!\n");
+
+          ids = malloc(num_elem * sizeof(int));
+          tipos = malloc(num_elem * sizeof(int));
+          dists = malloc(num_elem * sizeof(double));
+          classes = malloc(num_elem * sizeof(union classe));
+
+          calculaDist(file_data, schema, num_campos, ids, dists, &classes, tipos, num_elem);
+          // for (int i=0; i < num_elem; i++) {
+          //   printf("%d %.2lf %d ", ids[i], dists[i], tipos[i]);
+          //   switch (tipos[i]) {
+          //     case 0:
+          //       printf("%d\n", classes[i].i);
+          //       break;
+          //     case 1:
+          //       printf("%.2lf\n", classes[i].d);
+          //       break;
+          //     case 2:
+          //       printf("%s\n", classes[i].s);
+          //       break;
+          //   }
+          // }
+
+          quicksort(dists, ids, classes, tipos, 0, num_elem-1);
+          // printf("--\n");
+          //
+          // for (int i=0; i < num_elem; i++) {
+          //   printf("%d %.2lf %d ", ids[i], dists[i], tipos[i]);
+          //   switch (tipos[i]) {
+          //     case 0:
+          //       printf("%d\n", classes[i].i);
+          //       break;
+          //     case 1:
+          //       printf("%.2lf\n", classes[i].d);
+          //       break;
+          //     case 2:
+          //       printf("%s\n", classes[i].s);
+          //       break;
+          //   }
+          // }
+
+          printDataIDS(file_data, schema, num_campos, ids, qtd);
         }
         else {
           if (strcmp(comando, "knn") == 0) {
-            // printf("Escolheu knn\n");
+            scanf("%d", &qtd);
+            for (int i=0; i < (num_campos - 2); i++) {
+              switch (schema[i].tipo) {
+                case 0:
+                  scanf("%d", &schema[i].uni.i);
+                  break;
+                case 1:
+                  scanf("%lf", &schema[i].uni.d);
+                  break;
+                case 2:
+                  getchar();
+                  scanf("%[^\n]s", schema[i].uni.s);
+                  break;
+              }
+            }
+
+            ids = malloc(num_elem * sizeof(int));
+            tipos = malloc(num_elem * sizeof(int));
+            dists = malloc(num_elem * sizeof(double));
+            classes = malloc(num_elem * sizeof(union classe));
+
+            calculaDist(file_data, schema, num_campos, ids, dists, &classes, tipos, num_elem);
+
+            quicksort(dists, ids, classes, tipos, 0, num_elem-1);
+
+            class_select = calloc(qtd, sizeof(int));
+
+            for (int i=0; i < qtd; i++) {
+              switch (tipos[0]) {
+                case 0:
+                  for (int j=i; j < qtd; j++) {
+                    if (classes[i].i == classes[j].i) {
+                      class_select[i]++;
+                    }
+                  }
+                  break;
+                case 1:
+                  for (int j=i; j < qtd; j++) {
+                    if (classes[i].d == classes[j].d) {
+                      class_select[i]++;
+                    }
+                  }
+                  break;
+                case 2:
+                  for (int j=i; j < qtd; j++) {
+                    if (strcmp(classes[i].s, classes[j].s) == 0) {
+                      class_select[i]++;
+                    }
+                  }
+                  break;
+              }
+            }
+
+            i_maior = 0;
+            for (int i=1; i < qtd; i++) {
+              if (class_select[i] > class_select[i_maior]) {
+                i_maior = i;
+              }
+            }
+
+            switch (tipos[0]) {
+              case 0:
+                printf("%d\n", classes[i_maior].i);
+                break;
+              case 1:
+                printf("%.2lf\n", classes[i_maior].d);
+                break;
+              case 2:
+                printf("%s\n", classes[i_maior].s);
+                break;
+            }
           }
         }
       }
