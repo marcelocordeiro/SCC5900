@@ -11,32 +11,26 @@ Data da entrega: 16/05/2017
 
 typedef struct {
   int cor, linha, coluna, move; //Cor: 0 = branco, 1 = preto
-  char** (*gerarMovimentos)(char* tabuleiro);
 } rei;
 
 typedef struct {
   int cor, linha, coluna, move; //Cor: 0 = branco, 1 = preto
-  char** (*gerarMovimentos)(char* tabuleiro);
 } rainha;
 
 typedef struct {
   int cor, linha, coluna, move; //Cor: 0 = branco, 1 = preto
-  char** (*gerarMovimentos)(char* tabuleiro);
 } bispo;
 
 typedef struct {
   int cor, linha, coluna, move; //Cor: 0 = branco, 1 = preto
-  char** (*gerarMovimentos)(char* tabuleiro);
 } cavalo;
 
 typedef struct {
   int cor, linha, coluna, move; //Cor: 0 = branco, 1 = preto
-  char** (*gerarMovimentos)(char* tabuleiro);
 } torre;
 
 typedef struct {
   int cor, linha, coluna, move; //Cor: 0 = branco, 1 = preto
-  char** (*gerarMovimentos)(char* tabuleiro);
 } peao;
 
 typedef struct {
@@ -52,30 +46,6 @@ typedef struct {
   int cont_roque_pr, cont_roque_br;
 } pecas;
 
-char **gerarMovimentos_rei (char *tabuleiro) {
-  return NULL;
-}
-
-char **gerarMovimentos_rainha (char *tabuleiro) {
-  return NULL;
-}
-
-char **gerarMovimentos_bispo (char *tabuleiro) {
-  return NULL;
-}
-
-char **gerarMovimentos_cavalo (char *tabuleiro) {
-  return NULL;
-}
-
-char **gerarMovimentos_torre (char *tabuleiro) {
-  return NULL;
-}
-
-char **gerarMovimentos_peao (char *tabuleiro) {
-  return NULL;
-}
-
 rei *novoRei (int cor, int linha, int coluna) {
   rei *n_rei;
   n_rei = malloc(sizeof(rei));
@@ -83,7 +53,6 @@ rei *novoRei (int cor, int linha, int coluna) {
   n_rei->linha = linha;
   n_rei->coluna = coluna;
   n_rei->move = 0;
-  n_rei->gerarMovimentos = gerarMovimentos_rei;
   return n_rei;
 }
 
@@ -94,7 +63,6 @@ rainha *novaRainha (int cor, int linha, int coluna) {
   n_rainha->linha = linha;
   n_rainha->coluna = coluna;
   n_rainha->move = 0;
-  n_rainha->gerarMovimentos = gerarMovimentos_rainha;
   return n_rainha;
 }
 
@@ -105,7 +73,6 @@ bispo *novoBispo (int cor, int linha, int coluna) {
   n_bispo->linha = linha;
   n_bispo->coluna = coluna;
   n_bispo->move = 0;
-  n_bispo->gerarMovimentos = gerarMovimentos_bispo;
   return n_bispo;
 }
 
@@ -116,7 +83,6 @@ cavalo *novoCavalo (int cor, int linha, int coluna) {
   n_cavalo->linha = linha;
   n_cavalo->coluna = coluna;
   n_cavalo->move = 0;
-  n_cavalo->gerarMovimentos = gerarMovimentos_cavalo;
   return n_cavalo;
 }
 
@@ -127,7 +93,6 @@ torre *novaTorre (int cor, int linha, int coluna) {
   n_torre->linha = linha;
   n_torre->coluna = coluna;
   n_torre->move = 0;
-  n_torre->gerarMovimentos = gerarMovimentos_torre;
   return n_torre;
 }
 
@@ -138,7 +103,6 @@ peao *novoPeao(int cor, int linha, int coluna) {
   n_peao->linha = linha;
   n_peao->coluna = coluna;
   n_peao->move = 0;
-  n_peao->gerarMovimentos = gerarMovimentos_peao;
   return n_peao;
 }
 
@@ -363,16 +327,10 @@ void printFEN(pecas *tabuleiro, char turno_cor, int meio_turnos, int turnos) {
         }
         break;
     }
-    //Torres já foram movidas +
-    //Peças entre os reis e as torres
-    //Rei em cheque
-    //Rei passa por quadrados sob ataque
-    //Rei termina em cheque
   }
 
   printf(" ");
 
-  //En passant
   printf("-");
 
   printf(" %d", meio_turnos);
@@ -405,7 +363,6 @@ int executaMovimento(pecas **tabuleiro, char *movimento) {
   linha_origem = abs((movimento[1] - '0') - 8);
   coluna_destino = movimento[2] - 'a';
   linha_destino = abs((movimento[3] - '0') - 8);
-  // printf("Saindo de coluna %d e linha %d e indo para coluna %d e linha %d\n", coluna_origem, linha_origem, coluna_destino, linha_destino);
 
   if ((*tabuleiro)->printable[linha_destino][coluna_destino] != '-') {
     comeu = 1;
@@ -631,8 +588,6 @@ int main(int argc, char *argv[]) {
 
   tabuleiro = iniciaTabuleiro(inicio);
 
-  // printTabuleiro(tabuleiro);
-
   do {
     printFEN(tabuleiro, turno_cor, meio_turnos, turnos);
 
@@ -647,12 +602,6 @@ int main(int argc, char *argv[]) {
       game = 0;
       break;
     }
-
-    // if (afogamento(tabuleiro)) {
-    //   printf("Empate -- Afogamento\n");
-    //   game = 0;
-    //   break;
-    // }
 
     scanf("%s", movimento);
 
