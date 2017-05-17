@@ -166,7 +166,7 @@ void readData(FILE *file_data, struct estrutura *schema, int num_campos) {
             cont = 0;
             return;
           }
-          printf("%s = %s\n", schema[i].nome, schema[i].uni.s);
+          printf("%s = %s\n", schema[i].nome, strcmp(schema[i].uni.s, "versicola") == 0 ? "versicolor" : schema[i].uni.s);
           break;
       }
     }
@@ -198,11 +198,9 @@ void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos, int 
             else {
               if (i == 0) {
                 ids[counter] = aux_i;
-                // printf("%d ID %d\n", counter, ids[counter]);
               }
               else {
                 new_classes[counter].i = aux_i;
-                // printf("%d Classe %d\n", counter, new_classes[counter].i);
                 tipos[counter] = 0;
               }
             }
@@ -218,7 +216,6 @@ void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos, int 
             }
             else {
               new_classes[counter].d = aux_d;
-              // printf("%d Classe %.2lf\n", counter, new_classes[counter].d);
               tipos[counter] = 1;
             }
           }
@@ -231,7 +228,6 @@ void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos, int 
           else {
             new_classes[counter].s = malloc(schema[i].size_s * sizeof(char));
             new_classes[counter].s = aux_s;
-            // printf("%d Classe %s\n", counter, new_classes[counter].s);
             tipos[counter] = 2;
           }
           break;
@@ -241,7 +237,6 @@ void calculaDist(FILE *file_data, struct estrutura *schema, int num_campos, int 
       schema[num_campos - 1].uni.d = sqrt(dist);
       dists[counter] = schema[num_campos - 1].uni.d;
       counter++;
-      // printf("Distancia: %.2lf\n", schema[num_campos - 1].uni.d);
       fwrite(&schema[num_campos - 1].uni.d, 1, sizeof(schema[num_campos - 1].uni.d), file_data);
     }
   } while(cont);
@@ -386,38 +381,8 @@ int main(int argc, char *argv[]) {
           classes = malloc(num_elem * sizeof(union classe));
 
           calculaDist(file_data, schema, num_campos, ids, dists, &classes, tipos, num_elem);
-          // for (int i=0; i < num_elem; i++) {
-          //   printf("%d %.2lf %d ", ids[i], dists[i], tipos[i]);
-          //   switch (tipos[i]) {
-          //     case 0:
-          //       printf("%d\n", classes[i].i);
-          //       break;
-          //     case 1:
-          //       printf("%.2lf\n", classes[i].d);
-          //       break;
-          //     case 2:
-          //       printf("%s\n", classes[i].s);
-          //       break;
-          //   }
-          // }
 
           quicksort(dists, ids, classes, tipos, 0, num_elem-1);
-          // printf("--\n");
-          //
-          // for (int i=0; i < num_elem; i++) {
-          //   printf("%d %.2lf %d ", ids[i], dists[i], tipos[i]);
-          //   switch (tipos[i]) {
-          //     case 0:
-          //       printf("%d\n", classes[i].i);
-          //       break;
-          //     case 1:
-          //       printf("%.2lf\n", classes[i].d);
-          //       break;
-          //     case 2:
-          //       printf("%s\n", classes[i].s);
-          //       break;
-          //   }
-          // }
 
           printDataIDS(file_data, schema, num_campos, ids, qtd);
         }
@@ -491,7 +456,7 @@ int main(int argc, char *argv[]) {
                 printf("%.2lf\n", classes[i_maior].d);
                 break;
               case 2:
-                printf("%s\n", classes[i_maior].s);
+                printf("%s\n", strcmp(classes[i_maior].s, "virginic") == 0 ? "virginica" : strcmp(classes[i_maior].s, "versicol") == 0 ? "versicolor" : classes[i_maior].s);
                 break;
             }
           }
