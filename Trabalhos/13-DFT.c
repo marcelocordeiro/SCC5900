@@ -46,7 +46,7 @@ int partition(double *mags, int *index, cplx *vector, int left, int right) {
   cplx aux3;
 	i = left;
 	for (j = i+1; j <= right; j++) {
-		if (mags[j] < mags[left]) {
+		if (mags[j] > mags[left]) {
 			++i;
       aux1 = mags[i];
       mags[i] = mags[j];
@@ -79,27 +79,6 @@ void quicksort(double *mags, int *index, cplx *vector, int left, int right) {
 		quicksort(mags, index, vector, left, r-1);
 		quicksort(mags, index, vector, r+1, right);
 	}
-}
-
-void inverteVetor(double *mags, int *index, cplx *vector, int n) {
-  double *aux1;
-  int *aux2;
-  cplx *aux3;
-  aux1 = malloc(n * sizeof(double));
-  aux2 = malloc(n * sizeof(int));
-  aux3 = malloc(n * sizeof(cplx));
-
-  for (int i=0; i < n; i++) {
-    aux1[n-i-1] = mags[i];
-    aux2[n-i-1] = index[i];
-    aux3[n-i-1] = vector[i];
-  }
-
-  for (int i=0; i < n; i++) {
-    mags[i] = aux1[i];
-    index[i] = aux2[i];
-    vector[i] = aux3[i];
-  }
 }
 
 void dft(cplx *vetor, int n, cplx *resultado) {
@@ -205,11 +184,6 @@ int main(int argc, char *argv[]) {
   // show_double(mags, n);
   // show_int(index, n);
   // show_cplx(resultado, n);
-  // printf("Inverte vetor\n");
-  inverteVetor(mags, index, resultado, (int)((n/2)+1));
-  // show_double(mags, (int)((n/2)+1));
-  // show_int(index, (int)((n/2)+1));
-  // show_cplx(resultado, (int)((n/2)+1));
 
   for (int i=c; i < ((n/2) + 1); i++) {
     resultado[i] = 0;
@@ -218,28 +192,30 @@ int main(int argc, char *argv[]) {
   // show_cplx(resultado, n);
 
   aux = malloc(((int)(n/2) + 1) * sizeof(cplx));
-  // for (int i=0; i < ((n/2) + 1); i++) {
-  //   aux[index[i]] = resultado[i];
-  // }
-  // resultado = aux;
-  // // printf("Voltei\n");
-  // // show_cplx(resultado, n);
-  //
-  // // printf("Vou chamar a inversa\n");
-  // inversa = calloc(n, sizeof(cplx));
-  // dft_inverse(resultado, n, inversa);
-  // // printf("Inverti\n");
-  // // show_cplx(inversa, n);
-  //
-  // printf("%d\n", n);
-  // printf("%d\n", cont_mag);
-  // for (int i=0; i < c; i++) {
-  //   printf("%d ", (int) mags[i]);
-  // }
-  // printf("\n");
-  // for (int i=0; i < n; i++) {
-  //   // printf("%d\n", (unsigned char) round(creal(inversa[i])));
-  // }
+  for (int i=0; i < ((n/2) + 1); i++) {
+    aux[index[i]] = resultado[i];
+  }
+  for (int i=0; i < ((n/2) + 1); i++) {
+    resultado[i] = aux[i];
+  }
+  // printf("Voltei\n");
+  // show_cplx(resultado, n);
+
+  // printf("Vou chamar a inversa\n");
+  inversa = calloc(n, sizeof(cplx));
+  dft_inverse(resultado, n, inversa);
+  // printf("Inverti\n");
+  // show_cplx(inversa, n);
+
+  printf("%d\n", n);
+  printf("%d\n", cont_mag);
+  for (int i=0; i < c; i++) {
+    printf("%d ", (int) mags[i]);
+  }
+  printf("\n");
+  for (int i=0; i < n; i++) {
+    // printf("%d\n", (unsigned char) round(creal(inversa[i])));
+  }
 
   // fclose(audio);
   // free(index);
