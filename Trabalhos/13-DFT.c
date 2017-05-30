@@ -2,7 +2,7 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega: 29/05/2017
+Data da entrega: 30/05/2017
 */
 
 #include <stdio.h>
@@ -11,33 +11,6 @@ Data da entrega: 29/05/2017
 #include <math.h>
 
 typedef double complex cplx;
-
-#define PI 3.14159265358979323846
-#define e 2.71828182845904523536
-
-void show_cplx(cplx *vetor, int n) {
-  for (int i=0; i < n; i++) {
-    if (!cimag(vetor[i]))
-      printf("(%lf)", creal(vetor[i]));
-    else
-      printf("(%lf %lfi)", creal(vetor[i]), cimag(vetor[i]));
-  }
-  printf("\n\n");
-}
-
-void show_int(int *vetor, int n) {
-  for (int i=0; i < n; i++) {
-    printf("%d ", vetor[i]);
-  }
-  printf("\n\n");
-}
-
-void show_double(double *vetor, int n) {
-  for (int i=0; i < n; i++) {
-    printf("%.2lf ", vetor[i]);
-  }
-  printf("\n\n");
-}
 
 int partition(double *mags, int *index, cplx *vector, int left, int right) {
 	int i, j;
@@ -72,23 +45,23 @@ int partition(double *mags, int *index, cplx *vector, int left, int right) {
 }
 
 
-void quicksort(double *mags, int *index, cplx *vector, int left, int right) {
+void quicksort_descending(double *mags, int *index, cplx *vector, int left, int right) {
 	int r;
 	if (left < right) {
 		r = partition(mags, index, vector, left, right);
-		quicksort(mags, index, vector, left, r-1);
-		quicksort(mags, index, vector, r+1, right);
+		quicksort_descending(mags, index, vector, left, r-1);
+		quicksort_descending(mags, index, vector, r+1, right);
 	}
 }
 
 void dft(cplx *vetor, int n, cplx *resultado) {
   double aux1;
   cplx aux2;
-  for (int i=2; i < ((n/2) + 1); i++) {
+  for (int i=0; i < ((n/2) + 1); i++) {
     for (int j=0; j < n; j++) {
       aux1 = (double)((double)j/(double)n);
-      aux2 = (cplx) (-1.0 * I * 2.0 * PI * (i * 1.0) * aux1);
-      resultado[i] += (cplx) vetor[j] * cpow(e, aux2);
+      aux2 = (cplx) (-1.0 * I * 2.0 * M_PI * (i * 1.0) * aux1);
+      resultado[i] += (cplx) vetor[j] * cpow(M_E, aux2);
     }
     if (i == 0) {
       resultado[i] = (cplx) (resultado[i] * (double)((double)1/(double)n));
@@ -102,11 +75,11 @@ void dft(cplx *vetor, int n, cplx *resultado) {
 void dft_inverse(cplx *vetor, int n, cplx *resultado) {
   double aux1;
   cplx aux2;
-  for (int i=2; i < n; i++) {
+  for (int i=0; i < n; i++) {
     for (int j=0; j < ((n/2) + 1); j++) {
       aux1 = (double)((double)j/(double)n);
-      aux2 = (cplx) (I * 2.0 * PI * (i * 1.0) * aux1);
-      resultado[i] += (cplx) vetor[j] * cpow(e, aux2);
+      aux2 = (cplx) (I * 2.0 * M_PI * (i * 1.0) * aux1);
+      resultado[i] += (cplx) vetor[j] * cpow(M_E, aux2);
     }
   }
 }
@@ -138,32 +111,8 @@ int main(int argc, char *argv[]) {
     input[n-1] = (double) byte;
   }
 
-  // cplx buf[] = {1, 1, 1, 1, 0, 0, 0, 0};
-  // cplx buf2[] = {0, 0, 0, 0, 0, 0, 0, 0};
-  // cplx buf3[] = {0, 0, 0, 0, 0, 0, 0, 0};
-  // n = 8;
-  //
-  // show_cplx(buf, n);
-  // show_cplx(buf2, n);
-  // printf("Vou chamar DFT\n");
-  // dft(buf, n, buf2);
-  // printf("Chamei DFT\n\n");
-  // show_cplx(buf, n);
-  // show_cplx(buf2, n);
-  // printf("Vou chamar a inversa\n");
-  // dft_inverse(buf2, n, buf3);
-  // printf("Chamei a inversa\n\n");
-  // show_cplx(buf2, n);
-  // show_cplx(buf3, n);
-
-  // printf("Vou chamar DFT\n");
   resultado = calloc(((int)(n/2) + 1), sizeof(cplx));
   dft(input, n, resultado);
-  // printf("Chamei DFT\n\n");
-  //
-  // printf("%d\n", n);
-  // show_cplx(input, n);
-  // show_cplx(resultado, n);
 
   mags = malloc(((int)(n/2) + 1) * sizeof(double));
   index = malloc(((int)(n/2) + 1) * sizeof(int));
@@ -176,20 +125,11 @@ int main(int argc, char *argv[]) {
     index[i] = i;
   }
 
-  // show_double(mags, n);
-  // show_int(index, n);
-  // show_cplx(resultado, n);
-  // printf("Quick\n");
-  quicksort(mags, index, resultado, 0, (int)((n/2)+1));
-  // show_double(mags, n);
-  // show_int(index, n);
-  // show_cplx(resultado, n);
+  quicksort_descending(mags, index, resultado, 0, (int)((n/2)+1));
 
   for (int i=c; i < ((n/2) + 1); i++) {
     resultado[i] = 0;
   }
-  // printf("Zerei\n");
-  // show_cplx(resultado, n);
 
   aux = malloc(((int)(n/2) + 1) * sizeof(cplx));
   for (int i=0; i < ((n/2) + 1); i++) {
@@ -198,14 +138,9 @@ int main(int argc, char *argv[]) {
   for (int i=0; i < ((n/2) + 1); i++) {
     resultado[i] = aux[i];
   }
-  // printf("Voltei\n");
-  // show_cplx(resultado, n);
 
-  // printf("Vou chamar a inversa\n");
   inversa = calloc(n, sizeof(cplx));
   dft_inverse(resultado, n, inversa);
-  // printf("Inverti\n");
-  // show_cplx(inversa, n);
 
   printf("%d\n", n);
   printf("%d\n", cont_mag);
@@ -214,16 +149,16 @@ int main(int argc, char *argv[]) {
   }
   printf("\n");
   for (int i=0; i < n; i++) {
-    // printf("%d\n", (unsigned char) round(creal(inversa[i])));
+    printf("%d\n", (unsigned char) round(creal(inversa[i])));
   }
 
-  // fclose(audio);
-  // free(index);
-  // free(mags);
-  // free(resultado);
-  // free(inversa);
-  // free(aux);
-  // free(input);
+  fclose(audio);
+  free(index);
+  free(mags);
+  free(resultado);
+  free(inversa);
+  free(aux);
+  free(input);
 
   return 0;
 }
