@@ -9,6 +9,12 @@ typedef struct NODE {
   char *symbol;
 } Node;
 
+void printVector(Node **vector, int size) {
+  for (int i=0; i < size; i++) {
+    printf("%d - %s\n", vector[i]->frequence, vector[i]->symbol);
+  }
+}
+
 void mergeASCII(Node ***vector, int start, int middle, int end) {
 	Node **left, **right, *new_node;
 	int nleft, nright;
@@ -17,12 +23,15 @@ void mergeASCII(Node ***vector, int start, int middle, int end) {
 	nleft = middle - start + 2;
 	nright = end - middle + 1;
 
+  printf("\n-- Inicio do merge com start %d, middle %d e end %d--\n-- Original --\n", start, middle, end);
+  printVector(*vector, end+1);
+
 	left = malloc(nleft * sizeof(Node*));
 	right = malloc(nright * sizeof(Node*));
 
   new_node = malloc(sizeof(Node));
-  new_node->symbol = malloc(10 * sizeof(char));
-  strcpy(new_node->symbol, "zzzzzzzzz");
+  new_node->symbol = malloc(sizeof(char));
+  strcpy(new_node->symbol, "z");
 
 	counter = 0;
 	for (i = start; i <= middle; i++)
@@ -34,14 +43,25 @@ void mergeASCII(Node ***vector, int start, int middle, int end) {
     right[counter++] = (*vector)[i];
 	right[counter] = new_node;
 
+  printf("-- Left --\n");
+  printVector(left, nleft);
+
+  printf("-- Right --\n");
+  printVector(right, nright);
+
 	l = r = 0;
 	for (i = start; i <= end; i++) {
+    printf("Comparando %s com %s: %s\n", left[l]->symbol, right[r]->symbol, strcmp(left[l]->symbol, right[r]->symbol) <= 0 ? left[l]->symbol : right[r]->symbol);
 		if (strcmp(left[l]->symbol, right[r]->symbol) <= 0) {
 			(*vector)[i] = left[l++];
 		} else {
 			(*vector)[i] = right[r++];
 		}
 	}
+
+  printf("-- Resultado --\n");
+  printVector(*vector, end+1);
+  printf("-- Fim do merge --\n");
 }
 
 void mergesortASCII(Node ***vector, int start, int end) {
@@ -118,12 +138,6 @@ int thereIs(Node **vector, int size, char text) {
   return 0;
 }
 
-void printVector(Node **vector, int size) {
-  for (int i=0; i < size; i++) {
-    printf("%d - %s\n", vector[i]->frequence, vector[i]->symbol);
-  }
-}
-
 int buildVector(Node ***vector, char *text) {
   int size = 0;
   Node *new_node;
@@ -158,10 +172,46 @@ int buildVector(Node ***vector, char *text) {
   return size;
 }
 
+Node *buildTree(Node ***vector, int *size) {
+  Node *new_node;
+
+  if (*size < 2) {
+    return NULL;
+  }
+
+  printf("Vou juntar %s (%d) com %s (%d)\n", (*vector)[0]->symbol, (*vector)[0]->frequence, (*vector)[1]->symbol, (*vector)[1]->frequence);
+  new_node = malloc(sizeof(Node));
+  new_node->frequence = (*vector)[0]->frequence + (*vector)[1]->frequence;
+  new_node->symbol = malloc((strlen((*vector)[0]->symbol) + strlen((*vector)[1]->symbol)) * sizeof(char));
+  strcpy(new_node->symbol, (*vector)[0]->symbol);
+  new_node->symbol = strcat(new_node->symbol, (*vector)[1]->symbol);
+  new_node->left = (*vector)[0];
+  new_node->right = (*vector)[1];
+  printf("Resultando em %s (%d)\n", new_node->symbol, new_node->frequence);
+
+  (*vector)[0] = new_node;
+  (*size)--;
+  for (int i=1; i < (*size); i++) {
+    (*vector)[i] = (*vector)[i+1];
+  }
+
+  free((*vector)[(*size)]);
+
+  printf("-- Antes dos sorts --\n");
+  printVector(*vector, *size);
+
+  mergesortASCII(vector, 0, ((*size)-1));
+  printf("-- Depois do ascii sort --\n");
+  printVector(*vector, *size);
+  mergesortFreq(vector, 0, ((*size)-1));
+  printf("-- Depois do freq sort --\n");
+  printVector(*vector, *size);
+}
+
 int main(int argc, char *argv[]) {
     FILE *my_file;
     char file_name[20], *extension, *text;
-    Node **vector = NULL;
+    Node *root, **vector = NULL;
     int size_text, size_vector;
 
     scanf("%s", file_name);
@@ -180,8 +230,10 @@ int main(int argc, char *argv[]) {
         fgets(text, size_text * sizeof(char), my_file);
 
         size_vector = buildVector(&vector, text);
+        // printVector(vector, size_vector);
 
-        printVector(vector, size_vector);
+        root = buildTree(&vector, &size_vector);
+        // printVector(vector, size_vector);
 
         free(text);
 
