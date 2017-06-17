@@ -9,11 +9,12 @@ Data da entrega: 16/06/2017
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 
 struct NODE {
   struct NODE *left, *right;
   int frequence;
-  char *symbol;
+  char *symbol, *path;
 };
 
 typedef struct NODE Node;
@@ -24,10 +25,30 @@ void printVector(Node **vector, int size) {
   }
 }
 
+void printTable(Node **vector, int size) {
+  for (int i=0; i < size; i++) {
+    printf("%s - %s\n", vector[i]->symbol, vector[i]->path);
+  }
+}
+
+void writeTable(Node **vector, int size, FILE *my_file) {
+  char aux[20];
+  for (int i=0; i < size; i++) {
+    strcpy(aux, vector[i]->symbol);
+    strcat(aux, " - ");
+    strcat(aux, vector[i]->path);
+    strcat(aux, "\n");
+    printf("%s", aux);
+    fwrite(aux, 1, sizeof(aux), my_file);
+  }
+}
+
 void mergeASCII(Node ***vector, int start, int middle, int end) {
 	Node **left, **right;
 	int nleft, nright;
-	int counter, l, r, i, symbol_size;
+	int counter, l, r, i, symbol_size, node_size;
+
+  node_size = (int) sizeof(Node*);
 
   nleft = middle - start + 2;
 	nright = end - middle + 1;
@@ -45,10 +66,10 @@ void mergeASCII(Node ***vector, int start, int middle, int end) {
     memcpy(left[counter], (*vector)[i], sizeof(Node));
     memcpy(left[counter]->symbol, (*vector)[i]->symbol, symbol_size * sizeof(char));
     if ((*vector)[i]->left != NULL) {
-      memcpy(left[counter]->left, (*vector)[i]->left, sizeof(Node*));
+      memcpy(left[counter]->left, (*vector)[i]->left, node_size);
     }
     if ((*vector)[i]->right != NULL) {
-      memcpy(left[counter]->right, (*vector)[i]->right, sizeof(Node*));
+      memcpy(left[counter]->right, (*vector)[i]->right, node_size);
     }
     counter++;
   }
@@ -69,10 +90,10 @@ void mergeASCII(Node ***vector, int start, int middle, int end) {
     memcpy(right[counter], (*vector)[i], sizeof(Node));
     memcpy(right[counter]->symbol, (*vector)[i]->symbol, symbol_size * sizeof(char));
     if ((*vector)[i]->left != NULL) {
-      memcpy(right[counter]->left, (*vector)[i]->left, sizeof(Node*));
+      memcpy(right[counter]->left, (*vector)[i]->left, node_size);
     }
     if ((*vector)[i]->right != NULL) {
-      memcpy(right[counter]->right, (*vector)[i]->right, sizeof(Node*));
+      memcpy(right[counter]->right, (*vector)[i]->right, node_size);
     }
     counter++;
   }
@@ -109,7 +130,9 @@ void mergesortASCII(Node ***vector, int start, int end) {
 void mergeFreq(Node ***vector, int start, int middle, int end) {
   Node **left, **right;
   int nleft, nright;
-  int counter, l, r, i, symbol_size;
+  int counter, l, r, i, symbol_size, node_size;
+
+  node_size = (int) sizeof(Node*);
 
   nleft = middle - start + 2;
   nright = end - middle + 1;
@@ -127,10 +150,10 @@ void mergeFreq(Node ***vector, int start, int middle, int end) {
     memcpy(left[counter], (*vector)[i], sizeof(Node));
     memcpy(left[counter]->symbol, (*vector)[i]->symbol, symbol_size * sizeof(char));
     if ((*vector)[i]->left != NULL) {
-      memcpy(left[counter]->left, (*vector)[i]->left, sizeof(Node*));
+      memcpy(left[counter]->left, (*vector)[i]->left, node_size);
     }
     if ((*vector)[i]->right != NULL) {
-      memcpy(left[counter]->right, (*vector)[i]->right, sizeof(Node*));
+      memcpy(left[counter]->right, (*vector)[i]->right, node_size);
     }
     counter++;
   }
@@ -151,10 +174,10 @@ void mergeFreq(Node ***vector, int start, int middle, int end) {
     memcpy(right[counter], (*vector)[i], sizeof(Node));
     memcpy(right[counter]->symbol, (*vector)[i]->symbol, symbol_size * sizeof(char));
     if ((*vector)[i]->left != NULL) {
-      memcpy(right[counter]->left, (*vector)[i]->left, sizeof(Node*));
+      memcpy(right[counter]->left, (*vector)[i]->left, node_size);
     }
     if ((*vector)[i]->right != NULL) {
-      memcpy(right[counter]->right, (*vector)[i]->right, sizeof(Node*));
+      memcpy(right[counter]->right, (*vector)[i]->right, node_size);
     }
     counter++;
   }
@@ -269,11 +292,75 @@ Node *buildTree(Node ***vector, int *size) {
   return buildTree(vector, size);
 }
 
+void buildTable(Node ***table, Node *node, int *size, char **path) {
+  if (node) {
+    if (node->left)
+      strcat(*path, "0");
+    buildTable(table, node->left, size, path);
+    if (node->left) {
+      (*path)[strlen(*path)-1] = (char) 0;
+    }
+    if (strlen(node->symbol) == 1) {
+      (*table) = realloc((*table), ((*size) + 1) * sizeof(Node*));
+      (*table)[(*size)] = malloc(sizeof(Node));
+      (*table)[(*size)]->symbol = malloc(strlen(node->symbol) * sizeof(char));
+      (*table)[(*size)] = node;
+      (*table)[(*size)]->path = malloc(strlen(*path) * sizeof(char));
+      strcpy((*table)[(*size)]->path, *path);
+      (*table)[(*size)]->frequence = 0;
+      (*table)[(*size)]->left = NULL;
+      (*table)[(*size)]->right = NULL;
+      (*size)++;
+    }
+    if (node->right)
+      strcat(*path, "1");
+    buildTable(table, node->right, size, path);
+    if (node->right){
+      (*path)[strlen(*path)-1] = (char) 0;
+    }
+  }
+}
+
+void compactFile(Node **table, char *text, int size, FILE *file) {
+  int aux, value, last_byte;
+
+  aux = 7;
+  value = 0;
+
+  for (int i=0; i < strlen(text); i++) {
+    for (int j=0; j < size; j++) {
+      if (table[j]->symbol[0] == text[i]) {
+        for (int k=0; k < strlen(table[j]->path); k++) {
+          if (table[j]->path[k] == '1') {
+            value += pow(2, aux);
+          }
+          aux--;
+          if (aux == -1) {
+            printf("%d\n", value);
+            fwrite(&value, 1, sizeof(value), file);
+            aux = 7;
+            value = 0;
+          }
+        }
+      }
+    }
+  }
+  if (aux != 0) {
+    aux++;
+    printf("%d\n", value);
+    fwrite(&value, 1, sizeof(value), file);
+    value = 0;
+    last_byte = 8 - aux;
+    printf("%d\n", last_byte);
+    fwrite(&value, 1, sizeof(value), file);
+  }
+}
+
 int main(int argc, char *argv[]) {
-    FILE *my_file;
-    char file_name[20], *extension, *text;
-    Node *root, **vector = NULL;
-    int size_text, size_vector;
+    FILE *my_file, *your_file;
+    char file_name[20], new_name[20], *extension, *text, *path;
+    Node *root, **vector = NULL, **table = NULL;
+    int size_text, size_vector, size_table;
 
     scanf("%s", file_name);
 
@@ -294,18 +381,37 @@ int main(int argc, char *argv[]) {
 
         root = buildTree(&vector, &size_vector);
 
-        inOrder(root);
+        size_table = 0;
+        path = calloc(10, sizeof(char));
+        strcpy(path, "");
+        buildTable(&table, root, &size_table, &path);
+
+        mergesortASCII(&table, 0, (size_table-1));
+
+        strcpy(new_name, file_name);
+        strtok(new_name, ".");
+        strcat(new_name, ".huff");
+
+        your_file = fopen(new_name, "w");
+
+        writeTable(table, size_table, your_file);
+
+        printf("-\n");
+
+        compactFile(table, text, size_table, your_file);
 
         free(text);
 
         break;
       case 'h': //Descompactar
-        my_file = fopen(file_name, "rb");
+        my_file = fopen(file_name, "r");
+        your_file = fopen(file_name, "w");
 
         break;
     }
 
     fclose(my_file);
+    fclose(your_file);
 
     return 0;
 }
