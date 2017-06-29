@@ -233,7 +233,9 @@ int findPaths(maze *lab, path ***paths) {
       printf("Testando se %d já foi visitado: ", lab->nodes[currentId-1]->edges[i]->destine);
       if ((!checkStack(visited, lab->nodes[currentId-1]->edges[i]->destine)) && (lab->nodes[currentId-1]->edges[i]->isClear)) {
         printf(" não\n");
-        myPush(&next, lab->nodes[currentId-1]->edges[i]->destine);
+        if (!checkStack(next, lab->nodes[currentId-1]->edges[i]->destine)) {
+          myPush(&next, lab->nodes[currentId-1]->edges[i]->destine);
+        }
       }
       else {
         printf(" sim\n");
@@ -274,6 +276,9 @@ int findPaths(maze *lab, path ***paths) {
         aux2 = aux;
         aux = myPop(&visited);
         printf("Agora tirei o %d\n", aux);
+        if (aux == 0) {
+          break;
+        }
       }
       myPush(&visited, aux);
       printf("Coloquei o %d de volta\n", aux);
@@ -291,6 +296,9 @@ int findPaths(maze *lab, path ***paths) {
         aux2 = aux;
         aux = myPop(&visited);
         printf("Agora tirei o %d\n", aux);
+        if (aux == 0) {
+          break;
+        }
       }
       myPush(&visited, aux);
       printf("Coloquei o %d de volta\n", aux);
@@ -332,6 +340,8 @@ int main(int argc, char *argv[]) {
   }
 
   scanf("%d", &lab->start);
+
+  printMazeInfo(lab);
 
   aux1 = findPaths(lab, &paths);
 
