@@ -136,19 +136,45 @@ MATRIZ_ESPARSA *multiplicar_matriz(MATRIZ_ESPARSA *m1, MATRIZ_ESPARSA *m2) {
 }
 
 MATRIZ_ESPARSA *somar_matriz(MATRIZ_ESPARSA *m1, MATRIZ_ESPARSA *m2) {
-  int valor;
+  int valor, i;
+  CELULA *paux1, *paux2;
   MATRIZ_ESPARSA *mat = criar_matriz(m1->nr_linhas, m1->nr_colunas);
 
-  if (mat != NULL) {
-    for (int i = 0; i < m1->nr_linhas; i++) {
-      for (int j = 0; j < m1->nr_colunas; j++) {
-        valor = get_matriz(m1, i, j) + get_matriz(m2, i, j);
-        if (valor != 0) {
-          set_matriz(mat, i, j, valor);
+  for (i = 0; i < m1->nr_linhas; i++) {
+    paux1 = m1->linhas[i];
+    paux2 = m2->linhas[i];
+    while ((paux1 != NULL) || (paux2 != NULL)) {
+      if ((paux1 != NULL) && (paux2 != NULL)) {
+        if (paux1->coluna == paux2->coluna) {
+          valor = paux1->valor + paux2-> valor;
+          set_matriz(mat, i, paux1->coluna, valor);
+          paux1 = paux1->direita;
+          paux2 = paux2->direita;
+          continue;
+        }
+        else {
+          set_matriz(mat, i, paux1->coluna, paux1->valor);
+          set_matriz(mat, i, paux2->coluna, paux2->valor);
+        }
+        if (paux1->coluna < paux2->coluna) {
+          paux1 = paux1->direita;
+        }
+        else {
+          paux2 = paux2->direita;
+        }
+      }
+      else {
+        if (paux1 == NULL) {
+          set_matriz(mat, i, paux2->coluna, paux2->valor);
+          paux2 = paux2->direita;
+        }
+        else {
+          set_matriz(mat, i, paux1->coluna, paux1->valor);
+          paux1 = paux1->direita;
         }
       }
     }
-  }
+ }
 
   return mat;
 }
