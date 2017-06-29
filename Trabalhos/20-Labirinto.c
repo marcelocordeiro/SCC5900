@@ -96,11 +96,11 @@ void cloneStack(stack **origin, stack **destine) {
   stack *aux = NULL;
   int id;
 
-  while (id = myPop(origin)) {
+  while ((id = myPop(origin))) {
     myPush(&aux, id);
   }
 
-  while (id = myPop(&aux)) {
+  while ((id = myPop(&aux))) {
     myPush(origin, id);
     myPush(destine, id);
   }
@@ -208,102 +208,102 @@ int findPaths(maze *lab, path ***paths) {
     myPush(&visited, lab->nodes[lab->start-1]->id);
   }
 
-  printf("Visited: ");
-  printStack(visited);
-
-  printf("Vou começar no %d que tem %d edges\n", lab->start, lab->nodes[lab->start-1]->nEdges);
+  // printf("Visited: ");
+  // printStack(visited);
+  //
+  // printf("Vou começar no %d que tem %d edges\n", lab->start, lab->nodes[lab->start-1]->nEdges);
   for (int i = 0; i < lab->nodes[lab->start-1]->nEdges; i++) {
     if ((!checkStack(visited, lab->nodes[lab->start-1]->edges[i]->destine)) && (lab->nodes[lab->start-1]->edges[i]->isClear)) {
       myPush(&next, lab->nodes[lab->start-1]->edges[i]->destine);
     }
   }
 
-  printf("Next: ");
-  printStack(next);
+  // printf("Next: ");
+  // printStack(next);
 
   while ((currentId = myPop(&next))) {
-    printf("Estou em %d que tem %d edges\n", lab->nodes[currentId-1]->id, lab->nodes[currentId-1]->nEdges);
+    // printf("Estou em %d que tem %d edges\n", lab->nodes[currentId-1]->id, lab->nodes[currentId-1]->nEdges);
     nNodes++;
     myPush(&visited, lab->nodes[currentId-1]->id);
-    printf("Visited: ");
-    printStack(visited);
-    printf("Next before: ");
-    printStack(next);
+    // printf("Visited: ");
+    // printStack(visited);
+    // printf("Next before: ");
+    // printStack(next);
     for (int i = lab->nodes[currentId-1]->nEdges - 1; i >= 0; i--) {
-      printf("Testando se %d já foi visitado: ", lab->nodes[currentId-1]->edges[i]->destine);
+      // printf("Testando se %d já foi visitado: ", lab->nodes[currentId-1]->edges[i]->destine);
       if ((!checkStack(visited, lab->nodes[currentId-1]->edges[i]->destine)) && (lab->nodes[currentId-1]->edges[i]->isClear)) {
-        printf(" não\n");
+        // printf(" não\n");
         if (!checkStack(next, lab->nodes[currentId-1]->edges[i]->destine)) {
           myPush(&next, lab->nodes[currentId-1]->edges[i]->destine);
         }
       }
-      else {
-        printf(" sim\n");
-      }
+      // else {
+      //   printf(" sim\n");
+      // }
     }
-    printf("Next after: ");
-    printStack(next);
-    printf("Vou testar se %d é saída: ", lab->nodes[currentId-1]->id);
+    // printf("Next after: ");
+    // printStack(next);
+    // printf("Vou testar se %d é saída: ", lab->nodes[currentId-1]->id);
     if (lab->nodes[currentId-1]->isExit) {
-      printf("sim\n");
+      // printf("sim\n");
       nPaths++;
       *paths = realloc(*paths, nPaths * sizeof(path*));
       (*paths)[nPaths-1] = calloc(1, sizeof(path));
       (*paths)[nPaths-1]->nNodes = nNodes;
       (*paths)[nPaths-1]->nodes = malloc((*paths)[nPaths-1]->nNodes * sizeof(int));
-      printf("Visited: ");
-      printStack(visited);
-      printf("My path: ");
-      printStack(myPath);
+      // printf("Visited: ");
+      // printStack(visited);
+      // printf("My path: ");
+      // printStack(myPath);
       cloneStack(&visited, &myPath);
-      printf("--Clonei--\nVisited: ");
-      printStack(visited);
-      printf("My path: ");
-      printStack(myPath);
+      // printf("--Clonei--\nVisited: ");
+      // printStack(visited);
+      // printf("My path: ");
+      // printStack(myPath);
       for (int i = (*paths)[nPaths-1]->nNodes - 1; i >= 0; i--) {
         (*paths)[nPaths-1]->nodes[i] = myPop(&myPath);
       }
       dist = getTotalDistance(lab, (*paths)[nPaths-1]);
       (*paths)[nPaths-1]->distance = dist;
-      printf("Paths até agora: \n");
-      printPaths(*paths, nPaths);
+      // printf("Paths até agora: \n");
+      // printPaths(*paths, nPaths);
       aux = myPop(&visited);
       aux2 = 0;
-      printf("Agora tenho que voltar no visited, tirei o %d\n", aux);
+      // printf("Agora tenho que voltar no visited, tirei o %d\n", aux);
       while (nothingLeft(lab, visited, aux, aux2)) {
-        printf("Nothing left to visit on %d\n", aux);
+        // printf("Nothing left to visit on %d\n", aux);
         nNodes--;
         aux2 = aux;
         aux = myPop(&visited);
-        printf("Agora tirei o %d\n", aux);
+        // printf("Agora tirei o %d\n", aux);
         if (aux == 0) {
           break;
         }
       }
       myPush(&visited, aux);
-      printf("Coloquei o %d de volta\n", aux);
-      printf("Visited: ");
-      printStack(visited);
+      // printf("Coloquei o %d de volta\n", aux);
+      // printf("Visited: ");
+      // printStack(visited);
     }
     else {
-      printf("não\n");
+      // printf("não\n");
       aux = myPop(&visited);
       aux2 = 0;
-      printf("Agora tenho que voltar no visited, tirei o %d\n", aux);
+      // printf("Agora tenho que voltar no visited, tirei o %d\n", aux);
       while (nothingLeft(lab, visited, aux, aux2)) {
-        printf("Nothing left to visit on %d\n", aux);
+        // printf("Nothing left to visit on %d\n", aux);
         nNodes--;
         aux2 = aux;
         aux = myPop(&visited);
-        printf("Agora tirei o %d\n", aux);
+        // printf("Agora tirei o %d\n", aux);
         if (aux == 0) {
           break;
         }
       }
       myPush(&visited, aux);
-      printf("Coloquei o %d de volta\n", aux);
-      printf("Visited: ");
-      printStack(visited);
+      // printf("Coloquei o %d de volta\n", aux);
+      // printf("Visited: ");
+      // printStack(visited);
     }
   }
 
@@ -313,7 +313,6 @@ int findPaths(maze *lab, path ***paths) {
 int main(int argc, char *argv[]) {
   maze *lab;
   path **paths = NULL;
-  stack *myStack = NULL;
   int aux1, aux2, aux3;
 
   lab = malloc(sizeof(maze));
@@ -341,7 +340,7 @@ int main(int argc, char *argv[]) {
 
   scanf("%d", &lab->start);
 
-  printMazeInfo(lab);
+  // printMazeInfo(lab);
 
   aux1 = findPaths(lab, &paths);
 
