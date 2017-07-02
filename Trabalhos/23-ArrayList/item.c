@@ -18,9 +18,13 @@ ITEM *create_item(int key, int value) {
 }
 
 void destroy_item(ITEM *item) {
-  free(item);
+  if (item != NULL) {
+    free(item);
+  }
 }
 
 void print_item(ITEM *item) {
-  printf("%d/%d\n", item->key, item->value);
+  if (item != NULL) {
+    printf("%d/%d\n", item->key, item->value);
+  }
 }

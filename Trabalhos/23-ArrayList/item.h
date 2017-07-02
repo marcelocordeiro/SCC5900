@@ -13,8 +13,8 @@ typedef struct {
   int value;
 } ITEM;
 
-ITEM *criar_item(int chave, int valor);
-void apagar_item(ITEM *item);
-void imprimir_item(ITEM *item);
+ITEM *create_item(int, int);
+void destroy_item(ITEM *);
+void print_item(ITEM *);
 
 #endif

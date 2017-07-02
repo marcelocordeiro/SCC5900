@@ -1,6 +1,6 @@
 CC=gcc
 BINARY=main
-SRC=main.c item.c ArrayList.c
+SRC=main.c utils.c item.c ArrayList.c
 INCLUDES=.
 
 all:

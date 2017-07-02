@@ -10,51 +10,37 @@ Data da entrega: 02/07/2017
 
 #include <item.h>
 
-typedef struct node_str {
+#define tamanho_inicial 10
+
+typedef struct ArrayList_str {
   ITEM **list; //lista interna de void
   int used; //tamanho ocupado na lista
   int length; //tamanho da lista interna
-  struct node_str *next;
-} node;
-
-typedef struct {
-  node *start;
+  struct ArrayList_str *next;
 } ArrayList;
 
-//Cria a ArrayList e aloca toda memória necessaria
 ArrayList *new_arrayList();
 
-//adiciona elemento ao arraylist
-int add_arrayList(ArrayList *arrayList, ITEM *element);
+void add_arrayList(ArrayList *, ITEM *);
 
-//verifica no arraylist se existe um elemento com a chave informada
-int contains_arrayList(ArrayList *arrayList, int chave);
+int contains_arrayList(ArrayList *, int);
 
-//recupera um ITEM na posição informada
-ITEM *get_arrayList(ArrayList *arrayList, int pos);
+ITEM *get_arrayList(ArrayList *, int);
 
-//retorna qual a posicao do primeiro elemento com a chave informada
-int indexOf_arrayList(ArrayList *arrayList, int chave);
+int indexOf_arrayList(ArrayList *, int);
 
-//verifica se o arraylist esta vazio
-int isEmpty_arrayList(ArrayList *arrayList);
+int isEmpty_arrayList(ArrayList *);
 
-//remove um elemento do arraylist
-int remove_arrayList(ArrayList *arrayList, int pos);
+void remove_arrayList(ArrayList *, int);
 
-//modifica um elemento do arraylist
-int set_arrayList(ArrayList *arrayList, int pos, ITEM *element);
+void set_arrayList(ArrayList *, int, int, int);
 
-//retorna o tamanho total do arraylist
-int size_arrayList(ArrayList *arrayList);
+int size_arrayList(ArrayList *);
 
-//recupera um novo subarray no intervalo [beginIndex, endIndex[
-ArrayList *subArray_arrayList(ArrayList *arrayList, int beginIndex, int endIndex);
+ArrayList *subArray_arrayList(ArrayList *, int, int);
 
-//desaloca memória alocada pelo arraylist
-int destruct_arrayList(ArrayList **arrayList);
+void destroy_arrayList(ArrayList **);
 
-//imprime toda a lista
-void print_arrayList(ArrayList *arrayList);
+void print_arrayList(ArrayList *);
 
 #endif
