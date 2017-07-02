@@ -1,15 +1,14 @@
+/*
+Nome: Marcelo Augusto Cordeiro
+Número USP: 10342032
+Turma: SCC5900 - Projeto de Algoritmos
+Data da entrega: 02/07/2017
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <item.h>
 #include <ArrayList.h>
-
-typedef struct NO {
-  ITEM **list; //lista interna de void
-  int fimvet; //tamanho ocupado na lista
-  int tamanho; //tamanho da lista interna
-  struct NO *proximo;
-} NO;
-
-struct ArrayList {
-  NO *inicio;
-};
 
 ArrayList *new_arrayList() {
   printf("To be implemented...");
@@ -68,22 +67,23 @@ int size_arrayList(ArrayList *arrayList) {
 
 ArrayList *subArray_arrayList(ArrayList *arrayList, int beginIndex, int endIndex) {
     printf("To be implemented...");
-    return 1;
+    return NULL;
 }
 
-int destruct_arrayList(ArrayList **arrayList) {
+int destroy_arrayList(ArrayList **arrayList) {
   printf("To be implemented...");
   return 1;
 }
 
 void print_arrayList(ArrayList *arrayList) {
-  ArrayList *paux;
-  int i = 0;
-  for (paux = arrayList; paux != NULL; paux = paux->next) {
-    for (i = 0; i < paux->length; ++i) {
-      printf("%d: ", paux->globalBeginIndex + i);
-      print_item(paux->list[i]);
-    }
-    printf("\n\n");
-  }
+  printf("To be implemented...");
+  // ArrayList *aux;
+  // int i = 0;
+  // for (aux = arrayList; aux != NULL; aux = aux->next) {
+  //   for (i = 0; i < aux->length; ++i) {
+  //     printf("%d: ", aux->start + i);
+  //     print_item(aux->list[i]);
+  //   }
+  //   printf("\n\n");
+  // }
 }

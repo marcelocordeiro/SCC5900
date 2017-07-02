@@ -1,10 +1,16 @@
+/*
+Nome: Marcelo Augusto Cordeiro
+Número USP: 10342032
+Turma: SCC5900 - Projeto de Algoritmos
+Data da entrega: 02/07/2017
+*/
+
 #ifndef ITEM_H
 #define ITEM_H
 
-//representa o item armazenado
 typedef struct {
-  int chave;
-  int valor;
+  int key;
+  int value;
 } ITEM;
 
 ITEM *criar_item(int chave, int valor);
