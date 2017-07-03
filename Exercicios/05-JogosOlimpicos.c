@@ -2,124 +2,96 @@
 Nome: Marcelo Augusto Cordeiro
 Número USP: 10342032
 Turma: SCC5900 - Projeto de Algoritmos
-Data da entrega: 26/04/2017
+Data da entrega: 03/07/2017
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <limits.h>
+#include <string.h>
 
-void merge(int *vector, int *extra1, int *extra2, char **extra3, int start, int middle, int end) {
-	int *left, *right, *left2, *right2, *left3, *right3;
-  char **left4, **right4;
+struct pais {
+  int medalhas[3];
+  char desc[3];
+};
+
+void merge(struct pais **vector, int type, int start, int middle, int end) {
+	struct pais **left, **right;
 	int nleft, nright;
 	int counter, l, r, i;
 
 	nleft = middle - start + 2;
 	nright = end - middle + 1;
 
-	left = malloc(sizeof(int) * nleft);
-	right = malloc(sizeof(int) * nright);
-	left2 = malloc(sizeof(int) * nleft);
-	right2 = malloc(sizeof(int) * nright);
-	left3 = malloc(sizeof(int) * nleft);
-	right3 = malloc(sizeof(int) * nright);
-	left4 = malloc(sizeof(char*) * nleft);
-	right4 = malloc(sizeof(char*) * nright);
+	left = malloc(sizeof(struct pais*) * nleft);
+	right = malloc(sizeof(struct pais*) * nright);
 
 	counter = 0;
 	for (i = start; i <= middle; i++) {
-    left[counter] = vector[i];
-    left2[counter] = extra1[i];
-    left3[counter] = extra2[i];
-    left4[counter] = malloc(3 * sizeof(char));
-    left4[counter] = extra3[i];
-    counter++;
-  }
-  left[counter] = INT_MAX;
+		left[counter] = malloc(sizeof(struct pais));
+		memcpy(left[counter], vector[i], sizeof(struct pais));
+		counter++;
+	}
+	left[counter] = calloc(1, sizeof(struct pais));
+	left[counter]->medalhas[type] = -1;
 
 	counter = 0;
 	for (i = middle+1; i <= end; i++) {
-    right[counter] = vector[i];
-    right2[counter] = extra1[i];
-    right3[counter] = extra2[i];
-    right4[counter] = malloc(3 * sizeof(char));
-    right4[counter] = extra3[i];
-    counter++;
-  }
-  right[counter] = INT_MAX;
+		right[counter] = malloc(sizeof(struct pais));
+		memcpy(right[counter], vector[i], sizeof(struct pais));
+		counter++;
+	}
+	right[counter] = calloc(1, sizeof(struct pais));
+	right[counter]->medalhas[type] = -1;
 
 	// Intercalacao
 	l = r = 0;
 	for (i = start; i <= end; i++) {
-		if (left[l] <= right[r]) {
-			vector[i] = left[l];
-			extra1[i] = left2[l];
-			extra2[i] = left3[l];
-      extra3[i] = left4[l];
-      l++;
+		if (left[l]->medalhas[type] >= right[r]->medalhas[type]) {
+			memcpy(vector[i], left[l], sizeof(struct pais));
+			l++;
 		} else {
-			vector[i] = right[r];
-			extra1[i] = right2[r];
-			extra2[i] = right3[r];
-      extra3[i] = right4[r];
-      r++;
+			memcpy(vector[i], right[r], sizeof(struct pais));
+			r++;
 		}
 	}
 }
 
-void mergesort(int *vector, int *extra1, int *extra2, char **extra3, int start, int end) {
+void mergesort(struct pais **vector, int type, int start, int end) {
 	int middle;
 
 	if (start < end) {
 		middle = (end + start) / 2;
-		mergesort(vector, extra1, extra2, extra3, start, middle);
-		mergesort(vector, extra1, extra2, extra3, middle+1, end);
-		merge(vector, extra1, extra2, extra3, start, middle, end);
+		mergesort(vector, type, start, middle);
+		mergesort(vector, type, middle+1, end);
+		merge(vector, type, start, middle, end);
 	}
 }
 
-
-void ImprimeMedalhas(int *ouro, int *prata, int *bronze, char **desc, int n) {
-
-  // for (int i = 0; i < n; i++) {
-  //   printf("%s %d %d %d\n", desc[i], ouro[i], prata[i], bronze[i]);
-  // }
-
-  // printf("Hi\n");
-
-  mergesort(bronze, ouro, prata, desc, 0, n);
-  mergesort(prata, ouro, bronze, desc, 0, n);
-  mergesort(ouro, prata, bronze, desc, 0, n);
-
-  for (int i = 0; i < n; i++) {
-    printf("%s %d %d %d\n", desc[i], ouro[i], prata[i], bronze[i]);
-  }
+void printMedalhas(struct pais **paises, int n) {
+	for (int i = 0; i < n; i++) {
+		printf("%s %d %d %d\n", paises[i]->desc, paises[i]->medalhas[0], paises[i]->medalhas[1], paises[i]->medalhas[2]);
+	}
 }
 
 int main(int argc, char *argv[]) {
-  int n, *ouro, *prata, *bronze;
-  char **desc;
+  int n;
+  struct pais **paises;
 
   scanf("%d", &n);
-  getchar();
 
-  ouro = malloc(n * sizeof(int));
-  prata = malloc(n * sizeof(int));
-  bronze = malloc(n * sizeof(int));
-  desc = malloc(n * sizeof(char*));
+  paises = malloc(n * sizeof(struct pais*));
 
-  for (int k = 0; k < n; k++) {
-    desc[k] = malloc(3 * sizeof(char));
-    scanf("%s", desc[k]);
-    getchar();
-    scanf("%d", &ouro[k]);
-    scanf("%d", &prata[k]);
-    scanf("%d", &bronze[k]);
+  for (int i = 0; i < n; i++) {
+		paises[i] = malloc(n * sizeof(struct pais));
+		scanf("%s %d %d %d", paises[i]->desc, &paises[i]->medalhas[0], &paises[i]->medalhas[1], &paises[i]->medalhas[2]);
   }
 
-  ImprimeMedalhas(ouro, prata, bronze, desc, n);
+	mergesort(paises, 2, 0, n-1);
+	mergesort(paises, 1, 0, n-1);
+	mergesort(paises, 0, 0, n-1);
+
+	printMedalhas(paises, n);
 
   return 0;
 }
