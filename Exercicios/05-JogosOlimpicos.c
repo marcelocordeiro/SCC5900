@@ -7,6 +7,7 @@ Data da entrega: 26/04/2017
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <limits.h>
 
 void merge(int *vector, int *extra1, int *extra2, char **extra3, int start, int middle, int end) {
@@ -29,19 +30,23 @@ void merge(int *vector, int *extra1, int *extra2, char **extra3, int start, int 
 
 	counter = 0;
 	for (i = start; i <= middle; i++) {
-    left[counter++] = vector[i];
-    left2[counter++] = extra1[i];
-    left3[counter++] = extra2[i];
-    left4[counter++] = extra3[i];
+    left[counter] = vector[i];
+    left2[counter] = extra1[i];
+    left3[counter] = extra2[i];
+    left4[counter] = malloc(3 * sizeof(char));
+    left4[counter] = extra3[i];
+    counter++;
   }
   left[counter] = INT_MAX;
 
 	counter = 0;
 	for (i = middle+1; i <= end; i++) {
-    right[counter++] = vector[i];
-    right2[counter++] = extra1[i];
-    right3[counter++] = extra2[i];
-    right4[counter++] = extra3[i];
+    right[counter] = vector[i];
+    right2[counter] = extra1[i];
+    right3[counter] = extra2[i];
+    right4[counter] = malloc(3 * sizeof(char));
+    right4[counter] = extra3[i];
+    counter++;
   }
   right[counter] = INT_MAX;
 
@@ -49,9 +54,17 @@ void merge(int *vector, int *extra1, int *extra2, char **extra3, int start, int 
 	l = r = 0;
 	for (i = start; i <= end; i++) {
 		if (left[l] <= right[r]) {
-			vector[i] = left[l++];
+			vector[i] = left[l];
+			extra1[i] = left2[l];
+			extra2[i] = left3[l];
+      extra3[i] = left4[l];
+      l++;
 		} else {
-			vector[i] = right[r++];
+			vector[i] = right[r];
+			extra1[i] = right2[r];
+			extra2[i] = right3[r];
+      extra3[i] = right4[r];
+      r++;
 		}
 	}
 }
@@ -70,6 +83,19 @@ void mergesort(int *vector, int *extra1, int *extra2, char **extra3, int start, 
 
 void ImprimeMedalhas(int *ouro, int *prata, int *bronze, char **desc, int n) {
 
+  // for (int i = 0; i < n; i++) {
+  //   printf("%s %d %d %d\n", desc[i], ouro[i], prata[i], bronze[i]);
+  // }
+
+  // printf("Hi\n");
+
+  mergesort(bronze, ouro, prata, desc, 0, n);
+  mergesort(prata, ouro, bronze, desc, 0, n);
+  mergesort(ouro, prata, bronze, desc, 0, n);
+
+  for (int i = 0; i < n; i++) {
+    printf("%s %d %d %d\n", desc[i], ouro[i], prata[i], bronze[i]);
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -77,6 +103,7 @@ int main(int argc, char *argv[]) {
   char **desc;
 
   scanf("%d", &n);
+  getchar();
 
   ouro = malloc(n * sizeof(int));
   prata = malloc(n * sizeof(int));
@@ -85,8 +112,8 @@ int main(int argc, char *argv[]) {
 
   for (int k = 0; k < n; k++) {
     desc[k] = malloc(3 * sizeof(char));
+    scanf("%s", desc[k]);
     getchar();
-    fgets(desc[k], sizeof(desc[k]), stdin);
     scanf("%d", &ouro[k]);
     scanf("%d", &prata[k]);
     scanf("%d", &bronze[k]);
