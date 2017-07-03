@@ -22,6 +22,8 @@ typedef struct hashtable {
 	int (*hfunction)(double key, int m);
 } HASHTABLE;
 
+// double largest_key = 0;
+
 int myCompare(const void *string1, const void *string2) {
     const char *aux1 = *(const char**) string1;
     const char *aux2 = *(const char**) string2;
@@ -102,12 +104,24 @@ void hashtable_put(HASHTABLE **hashtable, char *word, int *prime) {
 
   pos = (*hashtable)->hfunction(key, (*hashtable)->m);
 
-  (*hashtable)->table[pos].key = key;
-  (*hashtable)->table[pos].collisions++;
+	if ((*hashtable)->table[pos].collisions > 0) {
+		if (key == (*hashtable)->table[pos].key) {
+			(*hashtable)->table[pos].key = key;
+		  (*hashtable)->table[pos].collisions++;
 
-  (*hashtable)->table[pos].word = realloc((*hashtable)->table[pos].word, (*hashtable)->table[pos].collisions * sizeof(char*));
-  (*hashtable)->table[pos].word[(*hashtable)->table[pos].collisions - 1] = malloc((strlen(word) + 1) * sizeof(char));
-  strcpy((*hashtable)->table[pos].word[(*hashtable)->table[pos].collisions - 1], word);
+		  (*hashtable)->table[pos].word = realloc((*hashtable)->table[pos].word, (*hashtable)->table[pos].collisions * sizeof(char*));
+		  (*hashtable)->table[pos].word[(*hashtable)->table[pos].collisions - 1] = malloc((strlen(word) + 1) * sizeof(char));
+		  strcpy((*hashtable)->table[pos].word[(*hashtable)->table[pos].collisions - 1], word);
+		}
+	}
+	else {
+		(*hashtable)->table[pos].key = key;
+		(*hashtable)->table[pos].collisions++;
+
+		(*hashtable)->table[pos].word = realloc((*hashtable)->table[pos].word, (*hashtable)->table[pos].collisions * sizeof(char*));
+		(*hashtable)->table[pos].word[(*hashtable)->table[pos].collisions - 1] = malloc((strlen(word) + 1) * sizeof(char));
+		strcpy((*hashtable)->table[pos].word[(*hashtable)->table[pos].collisions - 1], word);
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -130,6 +144,8 @@ int main(int argc, char *argv[]) {
   }
 
   fclose(dictionary);
+
+	// printf("-- %.0lf --\n", largest_key);
 
   greater = 0;
   for (int i = 0; i < m; i++) {
