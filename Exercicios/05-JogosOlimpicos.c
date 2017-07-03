@@ -7,45 +7,92 @@ Data da entrega: 26/04/2017
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
-void ImprimeMedalhas(struct pais *paises, int tipo, int n) {
-  int maior = paises[0].medalhas[tipo];
-  int indice = 0;
+void merge(int *vector, int *extra1, int *extra2, char **extra3, int start, int middle, int end) {
+	int *left, *right, *left2, *right2, *left3, *right3;
+  char **left4, **right4;
+	int nleft, nright;
+	int counter, l, r, i;
 
-  for (int k = 1; k < n; k++) {
-    if (paises[k].medalhas[tipo] >= maior) {
-      if (paises[k].medalhas[tipo] == maior) {
-        ImprimeMedalhas(paises, tipo + 1, n);
-    }
-    else {
-      maior = paises[k].medalhas[tipo];
-      indice = k;
-    }
+	nleft = middle - start + 2;
+	nright = end - middle + 1;
+
+	left = malloc(sizeof(int) * nleft);
+	right = malloc(sizeof(int) * nright);
+	left2 = malloc(sizeof(int) * nleft);
+	right2 = malloc(sizeof(int) * nright);
+	left3 = malloc(sizeof(int) * nleft);
+	right3 = malloc(sizeof(int) * nright);
+	left4 = malloc(sizeof(char*) * nleft);
+	right4 = malloc(sizeof(char*) * nright);
+
+	counter = 0;
+	for (i = start; i <= middle; i++) {
+    left[counter++] = vector[i];
+    left2[counter++] = extra1[i];
+    left3[counter++] = extra2[i];
+    left4[counter++] = extra3[i];
   }
+  left[counter] = INT_MAX;
+
+	counter = 0;
+	for (i = middle+1; i <= end; i++) {
+    right[counter++] = vector[i];
+    right2[counter++] = extra1[i];
+    right3[counter++] = extra2[i];
+    right4[counter++] = extra3[i];
+  }
+  right[counter] = INT_MAX;
+
+	// Intercalacao
+	l = r = 0;
+	for (i = start; i <= end; i++) {
+		if (left[l] <= right[r]) {
+			vector[i] = left[l++];
+		} else {
+			vector[i] = right[r++];
+		}
+	}
 }
 
-struct pais {
-  int medalhas[3];
-  char desc[3];
-};
+void mergesort(int *vector, int *extra1, int *extra2, char **extra3, int start, int end) {
+	int middle;
+
+	if (start < end) {
+		middle = (end + start) / 2;
+		mergesort(vector, extra1, extra2, extra3, start, middle);
+		mergesort(vector, extra1, extra2, extra3, middle+1, end);
+		merge(vector, extra1, extra2, extra3, start, middle, end);
+	}
+}
+
+
+void ImprimeMedalhas(int *ouro, int *prata, int *bronze, char **desc, int n) {
+
+}
 
 int main(int argc, char *argv[]) {
-  int n;
-  struct pais *paises;
+  int n, *ouro, *prata, *bronze;
+  char **desc;
 
   scanf("%d", &n);
 
-  paises = malloc(n * sizeof(struct pais));
+  ouro = malloc(n * sizeof(int));
+  prata = malloc(n * sizeof(int));
+  bronze = malloc(n * sizeof(int));
+  desc = malloc(n * sizeof(char*));
 
   for (int k = 0; k < n; k++) {
+    desc[k] = malloc(3 * sizeof(char));
     getchar();
-    fgets(paises[k].desc, sizeof(paises[k].desc), stdin);
-    scanf("%d", &paises[k].medalhas[0]);
-    scanf("%d", &paises[k].medalhas[1]);
-    scanf("%d", &paises[k].medalhas[2]);
+    fgets(desc[k], sizeof(desc[k]), stdin);
+    scanf("%d", &ouro[k]);
+    scanf("%d", &prata[k]);
+    scanf("%d", &bronze[k]);
   }
 
-  ImprimeMedalhas(paises, 0, n);
+  ImprimeMedalhas(ouro, prata, bronze, desc, n);
 
   return 0;
 }
